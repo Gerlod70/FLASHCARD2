@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flashcards Pro - V51.9.5</title>
+    <title>Flashcards Pro - V51.9.6</title>
     <style>
         :root { --blue: #007bff; --purple: #6f42c1; --dark-blue: #2c3e50; --bg: #f4f7f9; --text-dark: #2d3436; --deep-blue: #0984e3; --light-gray: #f1f2f6; --red: #e74c3c; --green: #27ae60; --orange: #f39c12; --teal: #00cec9; --grey: #636e72; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; color: var(--text-dark); overflow-x: hidden; width: 100vw; }
@@ -14,34 +14,43 @@
         .nav-btn.active-a { background: var(--blue); }
         .nav-btn.active-b { background: var(--purple); }
         .nav-btn.active-c { background: var(--dark-blue); border: 1px solid white; }
+        
         .card { background: white; width: 100%; max-width: 1000px; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-bottom: 25px; border-top: 8px solid #ddd; box-sizing: border-box; }
         #sectionA .card { border-color: var(--blue); }
         #sectionB .card { border-color: var(--purple); }
         #sectionC .card { border-color: var(--dark-blue); }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 10px; }
+        .card-mode-selector { padding: 5px 10px; border-radius: 8px; border: 1px solid #ddd; background: #f8f9fa; font-size: 13px; font-weight: bold; color: var(--text-dark); outline: none; }
+        
         .word-display { font-size: 34px; font-weight: 800; margin: 25px auto; display: flex; align-items: center; justify-content: center; gap: 15px; min-height: 60px; color: #1a1a1a; word-break: break-word; width: 85%; }
         .input-group { display: flex; width: 85%; margin: 0 auto 10px auto; gap: 10px; }
         .game-input { flex: 1; padding: 18px; border: 2px solid #b2bec3; border-radius: 10px; font-size: 22px; text-align: center; outline: none; }
         .btn-check { width: 180px; border-radius: 10px; font-weight: bold; color: white; background: #2d3436; font-size: 16px; text-transform: uppercase; }
         .feedback-area { margin: 0 auto 20px auto; width: 85%; font-weight: 900; font-size: 26px; min-height: 45px; color: var(--deep-blue); text-align: center; }
+        
         .game-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 85%; margin: 0 auto; }
         .btn-act { padding: 14px; border-radius: 8px; color: white; font-weight: bold; font-size: 14px; text-transform: uppercase; }
         .btn-edit { background: #636e72; }
         .btn-postpone { background: var(--orange); }
         .btn-delete { background: var(--red); }
+        
         .db-section { display: none; width: 100%; flex-direction: column; align-items: center; padding: 20px 0; }
         .db-section.active { display: flex; }
         .admin-panel { background: white; width: 100%; max-width: 1200px; border-radius: 15px; border: 1px solid #dfe6e9; overflow: hidden; }
-        .scroll-area { max-height: 500px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; }
+        .scroll-area { max-height: 500px; overflow-y: auto; overflow-x: auto; }
+        table { width: 100%; min-width: 800px; border-collapse: collapse; }
         th { background: #2d3436; color: white; padding: 15px; font-size: 12px; position: sticky; top: 0; }
         td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
         .hidden-text { background: var(--light-gray); color: var(--deep-blue); padding: 8px; border-radius: 6px; cursor: pointer; filter: blur(4px); }
         .hidden-text:hover { filter: blur(0); }
+        
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; }
         .modal-field { margin-bottom: 15px; text-align: left; }
         .modal-field label { font-weight: bold; display: block; margin-bottom: 5px; }
         .modal-field textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
+        
         #toast { visibility: hidden; min-width: 250px; background: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); z-index: 2000; }
         #toast.show { visibility: visible; }
         .btn-restart { display: none; background: var(--green); color: white; padding: 15px 30px; border-radius: 10px; font-weight: bold; margin-top: 20px; }
@@ -78,7 +87,14 @@
 
     <section id="sectionA" class="db-section active">
         <div class="card">
-            <div id="infoA" style="font-weight:bold; margin-bottom:10px; color:var(--blue);"></div>
+            <div class="card-header">
+                <div id="infoA" style="font-weight:bold; color:var(--blue);"></div>
+                <select id="gameModeA" class="card-mode-selector" onchange="syncFromGame('A')">
+                    <option value="en">Solo Eng</option>
+                    <option value="it">Solo Ita</option>
+                    <option value="alt">Modalità Alt</option>
+                </select>
+            </div>
             <div class="word-display"><span id="displayA">...</span><button onclick="speakItem(dbs.A.current.en)" style="background:none; font-size:30px;">🔊</button></div>
             <div id="gameA">
                 <div class="input-group">
@@ -99,7 +115,14 @@
 
     <section id="sectionB" class="db-section">
         <div class="card">
-            <div id="infoB" style="font-weight:bold; margin-bottom:10px; color:var(--purple);"></div>
+            <div class="card-header">
+                <div id="infoB" style="font-weight:bold; color:var(--purple);"></div>
+                <select id="gameModeB" class="card-mode-selector" onchange="syncFromGame('B')">
+                    <option value="en">Solo Eng</option>
+                    <option value="it">Solo Ita</option>
+                    <option value="alt">Modalità Alt</option>
+                </select>
+            </div>
             <div class="word-display"><span id="displayB">...</span><button onclick="speakItem(dbs.B.current.en)" style="background:none; font-size:30px;">🔊</button></div>
             <div id="gameB">
                 <div class="input-group">
@@ -120,7 +143,14 @@
 
     <section id="sectionC" class="db-section">
         <div class="card">
-            <div id="infoC" style="font-weight:bold; margin-bottom:10px;"></div>
+            <div class="card-header">
+                <div id="infoC" style="font-weight:bold;"></div>
+                <select id="gameModeC" class="card-mode-selector" onchange="syncFromGame('C')">
+                    <option value="en">Eng -> Ita</option>
+                    <option value="it">Ita -> Eng</option>
+                    <option value="alt">Modalità Alt</option>
+                </select>
+            </div>
             <div class="word-display"><span id="displayC">...</span><button onclick="speakItem(dbs.C.current.full)" style="background:none; font-size:30px;">🔊</button></div>
             <div id="gameC">
                 <div class="input-group">
@@ -162,7 +192,23 @@
             dbs[t].deck = dbs[t].data.filter(w => !w.nextReview || now > w.nextReview).sort(() => Math.random() - 0.5);
         }
 
-        // --- LOGICA MODIFICA ---
+        function syncFromGame(t) {
+            if (!dbs[t].current) return;
+            dbs[t].current.mode = document.getElementById('gameMode' + t).value;
+            save(t);
+            t === 'C' ? nextVerb(true) : nextCard(t, true);
+            renderTable(t);
+        }
+
+        function updateMode(t, idx, val) {
+            dbs[t].data[idx].mode = val;
+            save(t);
+            if(dbs[t].current === dbs[t].data[idx]) {
+                t === 'C' ? nextVerb(true) : nextCard(t, true);
+            }
+            renderTable(t);
+        }
+
         function manualEdit(t, i) {
             let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
             if (!item) return;
@@ -200,7 +246,6 @@
 
         function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
-        // --- LOGICA POSTICIPA ---
         function togglePause(t, i) {
             let w = (i === undefined) ? dbs[t].current : dbs[t].data[i];
             if (!w) return;
@@ -215,9 +260,8 @@
             showToast(isPaused ? "Riattivato!" : "Posticipato 30gg");
         }
 
-        // --- LOGICA ELIMINA ---
         function manualDelete(t, i) {
-            if (!confirm("Eliminare definitivamente?")) return;
+            if (!confirm("Eliminare?")) return;
             const idx = (i === undefined) ? dbs[t].data.indexOf(dbs[t].current) : i;
             if (idx > -1) {
                 dbs[t].data.splice(idx, 1);
@@ -231,21 +275,38 @@
 
         function checkGeneric(t) {
             const btn = document.getElementById('check' + t);
-            if (btn.innerText === "PROSSIMO") { nextCard(t); return; }
-            document.getElementById('fb' + t).innerText = dbs[t].current.it.toUpperCase();
+            if (btn.innerText === "PROSSIMO") { 
+                if(dbs[t].current.mode === 'alt') {
+                    dbs[t].current.lastAltState = (dbs[t].current.lastAltState === 'it') ? 'en' : 'it';
+                    save(t);
+                }
+                nextCard(t); 
+                return; 
+            }
+            document.getElementById('fb' + t).innerText = dbs[t].current._target.toUpperCase();
             btn.innerText = "PROSSIMO";
         }
 
         function checkVerb() {
             const btn = document.getElementById('checkC');
-            if (btn.innerText === "PROSSIMO") { nextVerb(); return; }
-            document.getElementById('fbC').innerText = dbs.C.current.full.toUpperCase() + "\n(" + dbs.C.current.it.toUpperCase() + ")";
+            if (btn.innerText === "PROSSIMO") { 
+                if(dbs.C.current.mode === 'alt') {
+                    dbs.C.current.lastAltState = (dbs.C.current.lastAltState === 'it') ? 'en' : 'it';
+                    save('C');
+                }
+                nextVerb(); 
+                return; 
+            }
+            const mode = dbs.C.current.mode || 'en';
+            const isIta = (mode === 'it') || (mode === 'alt' && dbs.C.current.lastAltState === 'it');
+            document.getElementById('fbC').innerText = isIta ? 
+                dbs.C.current.base.toUpperCase() + " - " + dbs.C.current.full.toUpperCase() : 
+                dbs.C.current.full.toUpperCase() + "\n(" + dbs.C.current.it.toUpperCase() + ")";
             btn.innerText = "PROSSIMO";
         }
 
         function nextCard(t, keep = false) {
-            const card = dbs[t];
-            if (card.deck.length === 0 && !keep) {
+            if (dbs[t].deck.length === 0 && !keep && !dbs[t].current) {
                 document.getElementById('display' + t).innerText = "FINITA! ✅";
                 document.getElementById('game' + t).style.display = "none";
                 document.getElementById('restart' + t).style.display = "inline-block";
@@ -253,16 +314,26 @@
             }
             document.getElementById('game' + t).style.display = "block";
             document.getElementById('restart' + t).style.display = "none";
-            if (!keep) card.current = card.deck.pop();
-            document.getElementById('display' + t).innerText = card.current.en.toUpperCase();
-            document.getElementById('ans' + t).value = "";
-            document.getElementById('fb' + t).innerText = "";
-            document.getElementById('check' + t).innerText = "CONTROLLA";
+            if (!keep) dbs[t].current = dbs[t].deck.pop();
+            
+            const mode = dbs[t].current.mode || 'en';
+            document.getElementById('gameMode' + t).value = mode;
+            let showEn = (mode === 'en') || (mode === 'alt' && dbs[t].current.lastAltState !== 'it');
+            if(mode === 'it') showEn = false;
+            
+            document.getElementById('display' + t).innerText = showEn ? dbs[t].current.en.toUpperCase() : dbs[t].current.it.toUpperCase();
+            dbs[t].current._target = showEn ? dbs[t].current.it : dbs[t].current.en;
+            
+            if (!keep) {
+                document.getElementById('ans' + t).value = "";
+                document.getElementById('fb' + t).innerText = "";
+                document.getElementById('check' + t).innerText = "CONTROLLA";
+            }
             updateInfo(t);
         }
 
         function nextVerb(keep = false) {
-            if (dbs.C.deck.length === 0 && !keep) {
+            if (dbs.C.deck.length === 0 && !keep && !dbs.C.current) {
                 document.getElementById('displayC').innerText = "FINITA! ✅";
                 document.getElementById('gameC').style.display = "none";
                 document.getElementById('restartC').style.display = "inline-block";
@@ -271,21 +342,43 @@
             document.getElementById('gameC').style.display = "block";
             document.getElementById('restartC').style.display = "none";
             if (!keep) dbs.C.current = dbs.C.deck.pop();
-            document.getElementById('displayC').innerText = dbs.C.current.base.toUpperCase();
-            document.getElementById('ansC').value = "";
-            document.getElementById('fbC').innerText = "";
-            document.getElementById('checkC').innerText = "CONTROLLA";
+            
+            const mode = dbs.C.current.mode || 'en';
+            document.getElementById('gameModeC').value = mode;
+            let showEn = (mode === 'en') || (mode === 'alt' && dbs.C.current.lastAltState !== 'it');
+            if(mode === 'it') showEn = false;
+            
+            document.getElementById('displayC').innerText = showEn ? dbs.C.current.base.toUpperCase() : dbs.C.current.it.toUpperCase();
+            
+            if (!keep) {
+                document.getElementById('ansC').value = "";
+                document.getElementById('fbC').innerText = "";
+                document.getElementById('checkC').innerText = "CONTROLLA";
+            }
             updateInfo('C');
         }
 
         function renderTable(t) {
             const table = document.getElementById('table' + t);
-            let html = `<tr><th>Elemento</th><th>Traduzione</th><th>Azioni</th></tr>`;
+            const now = Date.now();
+            let html = `<tr><th>#</th><th>Principale</th><th>Traduzione</th><th>Lingua</th><th>Azioni</th></tr>`;
             dbs[t].data.forEach((w, idx) => {
-                const isP = w.nextReview > Date.now();
+                const isP = w.nextReview > now;
+                const mType = w.mode || 'en';
+                let curMain = (t === 'C' ? w.base : w.en).toUpperCase();
+                let curTrans = (t === 'C' ? w.full : w.it).toUpperCase();
+                
                 html += `<tr style="${isP ? 'opacity:0.5' : ''}">
-                    <td>${(t === 'C' ? w.base : w.en).toUpperCase()}</td>
-                    <td><div class="hidden-text">${(t === 'C' ? w.full : w.it).toUpperCase()}</div></td>
+                    <td>${idx+1}</td>
+                    <td>${curMain}</td>
+                    <td><div class="hidden-text">${curTrans}</div></td>
+                    <td>
+                        <select onchange="updateMode('${t}',${idx},this.value)">
+                            <option value="en" ${mType==='en'?'selected':''}>En</option>
+                            <option value="it" ${mType==='it'?'selected':''}>Ita</option>
+                            <option value="alt" ${mType==='alt'?'selected':''}>Alt</option>
+                        </select>
+                    </td>
                     <td>
                         <button class="list-btn" style="background:var(--grey)" onclick="manualEdit('${t}', ${idx})">✏️</button>
                         <button class="list-btn" style="background:var(--orange)" onclick="togglePause('${t}', ${idx})">${isP ? 'R' : 'P'}</button>
@@ -307,7 +400,7 @@
         function updateInfo(t) { document.getElementById('info' + t).innerText = "RESTANTI: " + (dbs[t].deck.length + (dbs[t].current ? 1 : 0)); }
         function showToast(m) { const t = document.getElementById("toast"); t.innerText = m; t.className = "show"; setTimeout(() => t.className = "", 3000); }
         function speakItem(text) { const msg = new SpeechSynthesisUtterance(text); msg.lang = 'en-US'; window.speechSynthesis.speak(msg); }
-        function restartSession(t) { buildDeck(t); t === 'C' ? nextVerb() : nextCard(t); renderTable(t); }
+        function restartSession(t) { buildDeck(t); dbs[t].current = null; t === 'C' ? nextVerb() : nextCard(t); renderTable(t); }
 
         window.onload = init;
     </script>
