@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flashcards Pro - V51.9.4</title>
     <style>
-        :root { --blue: #007bff; --purple: #6f42c1; --dark-blue: #2c3e50; --bg: #f4f7f9; --text-dark: #2d3436; --deep-blue: #0984e3; --light-gray: #f1f2f6; --red: #e74c3c; --green: #27ae60; --orange: #f39c12; --teal: #00cec9; --grey: #636e72; }
+        :root { --blue: #007bff; --purple: #6f42c1; --dark-blue: #2c3e50; --bg: #f4f7f9; --text-dark: #2d3436; --deep-blue: #0984e3; --light-gray: #f1f2f6; --red: #e74c3c; --green: #27ae60; --orange: #f39c12; --teal: #00cec9; --grey: #636e72; --pink: #d63031; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; color: var(--text-dark); overflow-x: hidden; width: 100vw; }
         button, .nav-btn, .list-btn { transition: transform 0.1s ease, opacity 0.1s ease; outline: none; cursor: pointer; border: none; }
         button:active, .nav-btn:active, .list-btn:active { transform: scale(0.92); opacity: 0.7; }
         .main-nav { background: #2c3e50; width: 100%; display: flex; justify-content: center; padding: 12px 0; gap: 15px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-wrap: wrap; }
         .nav-btn { padding: 10px 20px; border-radius: 6px; font-weight: bold; color: white; background: #455a64; font-size: 14px; }
         .nav-btn.active-a { background: var(--blue); }
+        .nav-btn.active-d { background: var(--pink); }
         .nav-btn.active-b { background: var(--purple); }
         .nav-btn.active-c { background: var(--dark-blue); border: 1px solid white; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 10px; }
         .card-mode-selector { padding: 5px 10px; border-radius: 8px; border: 1px solid #ddd; background: #f8f9fa; font-size: 13px; font-weight: bold; color: var(--text-dark); outline: none; }
         .card { background: white; width: 100%; max-width: 1000px; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-bottom: 25px; border-top: 8px solid #ddd; box-sizing: border-box; }
         #sectionA .card { border-color: var(--blue); }
+        #sectionD .card { border-color: var(--pink); }
         #sectionB .card { border-color: var(--purple); }
         #sectionC .card { border-color: var(--dark-blue); }
         .word-display { font-size: 34px; font-weight: 800; margin: 25px auto; display: flex; align-items: center; justify-content: flex-start; gap: 15px; min-height: 60px; color: #1a1a1a; word-break: break-word; width: 85%; max-width: 850px; text-align: left; }
@@ -113,6 +115,7 @@
 
     <nav class="main-nav">
         <button id="navA" class="nav-btn active-a" onclick="switchTab('A')">Database 1</button>
+        <button id="navD" class="nav-btn" onclick="switchTab('D')">Database 2</button>
         <button id="navB" class="nav-btn" onclick="switchTab('B')">Lesson and Grammar</button>
         <button id="navC" class="nav-btn" onclick="switchTab('C')">Verbi Irregolari</button>
     </nav>
@@ -155,6 +158,46 @@
             <button class="btn-tool" style="background:var(--blue)" onclick="forceAltRotation('A')">RUOTA ALT 🔄</button>
         </div>
         <div class="admin-panel"><div class="list-header">Lista Database 1</div><div class="scroll-area"><table id="tableA"></table></div></div>
+    </section>
+
+    <section id="sectionD" class="db-section">
+        <div class="card">
+            <div class="card-header">
+                <div id="infoD" style="font-size:14px; font-weight:bold; color:var(--pink);"></div>
+                <select id="gameModeD" class="card-mode-selector" onchange="syncFromGame('D')">
+                    <option value="en">Solo Eng</option>
+                    <option value="it">Solo Ita</option>
+                    <option value="alt">Modalità Alt</option>
+                </select>
+            </div>
+            <div class="word-display"><span id="displayD">...</span><button onclick="speakItem(dbs.D.current.en)" style="background:none; font-size:30px;">🔊</button></div>
+            <div id="gameD">
+                <div class="input-group">
+                    <input type="text" id="ansD" class="game-input" placeholder="Traduci..." autocomplete="off">
+                    <button id="checkD" class="btn-check" onclick="checkGeneric('D')" style="background:var(--pink)">CONTROLLA</button>
+                </div>
+                <div id="fbD" class="feedback-area"></div>
+                <div class="game-controls">
+                    <button class="btn-act btn-edit" onclick="manualEdit('D')">Modifica</button>
+                    <button class="btn-act btn-postpone" onclick="togglePause('D')">Posticipa</button>
+                    <button class="btn-act btn-delete" onclick="manualDelete('D')">Elimina</button>
+                </div>
+            </div>
+            <button id="restartD" class="btn-restart" onclick="restartSession('D')">RICOMINCIA SESSIONE 🔄</button>
+        </div>
+        <div class="add-container">
+            <input type="text" id="newEnD" class="add-input" placeholder="Parola Inglese" oninput="handleIPhoneBtn('D')" onkeydown="handlePcTranslate(event, 'D', 'en')">
+            <input type="text" id="newItD" class="add-input" placeholder="Traduzione Italiana" oninput="handleIPhoneBtn('D')" onkeydown="handlePcTranslate(event, 'D', 'it')">
+            <button id="btnAddD" class="btn-add" style="background:var(--pink)" onclick="smartAdd('D')">AGGIUNGI +</button>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchD" class="search-input" placeholder="Cerca..." oninput="renderTable('D')">
+            <button class="btn-tool" style="background:var(--grey)" onclick="refreshList('D')">🔄 AGGIORNA</button>
+            <button class="btn-tool" style="background:var(--orange)" onclick="postponeAll('D')">⏳ POSTICIPA TUTTO</button>
+            <button class="btn-tool" style="background:var(--teal)" onclick="reactivateAll('D')">⚡ RIATTIVA TUTTO</button>
+            <button class="btn-tool" style="background:var(--pink)" onclick="forceAltRotation('D')">RUOTA ALT 🔄</button>
+        </div>
+        <div class="admin-panel"><div class="list-header">Lista Database 2</div><div class="scroll-area"><table id="tableD"></table></div></div>
     </section>
 
     <section id="sectionB" class="db-section">
@@ -242,16 +285,15 @@
 <script>
     const isIPhone = /iPhone|iPod|iPad/i.test(navigator.userAgent);
     
-    // --- MODIFICA PER ISOLAMENTO DATI ---
     // Cambia questa stringa per ogni sito diverso (es: 'SITO_A', 'SITO_B', ecc.)
     const APP_PREFIX = 'GITHUB_PROJECT_1'; 
 
     let dbs = {
         A: { key: APP_PREFIX + '_DATABASE_A', data: [], deck: [], current: null },
+        D: { key: APP_PREFIX + '_DATABASE_D', data: [], deck: [], current: null }, // Nuovo database identico al 1
         B: { key: APP_PREFIX + '_DATABASE_B', data: [], deck: [], current: null },
         C: { key: APP_PREFIX + '_VERBI_PRO', data: [], deck: [], current: null }
     };
-    // ------------------------------------
 
     let currentEditState = { t: null, i: null };
 
@@ -324,7 +366,9 @@
             btn.style.background = "#3498db";
         } else {
             btn.innerText = "AGGIUNGI +";
-            btn.style.background = (t === 'A') ? "#27ae60" : "#6f42c1";
+            if(t === 'A') btn.style.background = "#27ae60";
+            else if(t === 'D') btn.style.background = "var(--pink)";
+            else if(t === 'B') btn.style.background = "#6f42c1";
         }
     }
 
@@ -355,7 +399,7 @@
     }
 
     function init() {
-        ['A', 'B', 'C'].forEach(t => {
+        ['A', 'D', 'B', 'C'].forEach(t => {
             let saved = localStorage.getItem(dbs[t].key);
             dbs[t].data = saved ? JSON.parse(saved) : [];
             buildDeck(t); 
@@ -379,7 +423,7 @@
 
     function switchTab(t) {
         document.querySelectorAll('.db-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-a','active-b','active-c'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-a','active-b','active-c','active-d'));
         document.getElementById('section' + t).classList.add('active');
         document.getElementById('nav'+t).classList.add('active-'+t.toLowerCase());
         if(t === 'C') nextVerb(true); else nextCard(t, true); renderTable(t);
@@ -563,7 +607,7 @@
     }
 
     function exportData() {
-        const allData = { A: dbs.A.data, B: dbs.B.data, C: dbs.C.data }, blob = new Blob([JSON.stringify(allData)], { type: 'application/json' }), a = document.createElement('a');
+        const allData = { A: dbs.A.data, D: dbs.D.data, B: dbs.B.data, C: dbs.C.data }, blob = new Blob([JSON.stringify(allData)], { type: 'application/json' }), a = document.createElement('a');
         a.href = URL.createObjectURL(blob); a.download = `backup_flashcards_${new Date().toISOString().slice(0,10)}.json`; a.click();
     }
 
@@ -575,6 +619,7 @@
             try {
                 const imported = JSON.parse(e.target.result);
                 if(imported.A) { dbs.A.data = imported.A; save('A'); }
+                if(imported.D) { dbs.D.data = imported.D; save('D'); }
                 if(imported.B) { dbs.B.data = imported.B; save('B'); }
                 if(imported.C) { dbs.C.data = imported.C; save('C'); }
                 alert("Dati importati!"); location.reload();
