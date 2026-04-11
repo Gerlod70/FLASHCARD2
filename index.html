@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flashcards Pro - V51.9.4</title>
+    <title>Flashcards Pro - V51.9.5</title>
     <style>
         :root { --blue: #007bff; --purple: #6f42c1; --dark-blue: #2c3e50; --bg: #f4f7f9; --text-dark: #2d3436; --deep-blue: #0984e3; --light-gray: #f1f2f6; --red: #e74c3c; --green: #27ae60; --orange: #f39c12; --teal: #00cec9; --grey: #636e72; --pink: #d63031; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; color: var(--text-dark); overflow-x: hidden; width: 100vw; }
@@ -410,9 +410,18 @@
     }
 
     function restartSession(t) {
-        dbs[t].data.forEach(w => { if(w.mode === 'alt') w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; });
-        save(t); buildDeck(t); dbs[t].current = null;
-        t === 'C' ? nextVerb() : nextCard(t); renderTable(t);
+        // RUOTA AUTOMATICAMENTE TUTTE LE PAROLE IN MODALITÀ ALT
+        dbs[t].data.forEach(w => { 
+            if(w.mode === 'alt') {
+                w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it';
+            }
+        });
+        save(t); 
+        buildDeck(t); 
+        dbs[t].current = null;
+        if(t === 'C') nextVerb(); else nextCard(t); 
+        renderTable(t);
+        showToast("Sessione riavviata e lingue ruotate!");
     }
 
     function save(t) { localStorage.setItem(dbs[t].key, JSON.stringify(dbs[t].data)); }
@@ -453,12 +462,6 @@
 
         if(!keepCurrent) {
             dbs[t].current = dbs[t].deck.pop();
-            // ROTAZIONE AUTOMATICA PER MODALITÀ ALT
-            if(dbs[t].current && dbs[t].current.mode === 'alt') {
-                dbs[t].current.lastAltState = (dbs[t].current.lastAltState === 'it') ? 'en' : 'it';
-                save(t);
-                renderTable(t);
-            }
         }
         
         if(!dbs[t].current) return;
@@ -495,12 +498,6 @@
 
         if(!keepCurrent) {
             dbs.C.current = dbs.C.deck.pop();
-            // ROTAZIONE AUTOMATICA PER MODALITÀ ALT
-            if(dbs.C.current && dbs.C.current.mode === 'alt') {
-                dbs.C.current.lastAltState = (dbs.C.current.lastAltState === 'it') ? 'en' : 'it';
-                save('C');
-                renderTable('C');
-            }
         }
 
         if(!dbs.C.current) return;
