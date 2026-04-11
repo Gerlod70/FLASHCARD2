@@ -127,7 +127,7 @@
                 <select id="gameModeA" class="card-mode-selector" onchange="syncFromGame('A')">
                     <option value="en">Solo Eng</option>
                     <option value="it">Solo Ita</option>
-                    <option value="alt">Modalità Alt</option>
+                    <option value="alt" selected>Modalità Alt</option>
                 </select>
             </div>
             <div class="word-display"><span id="displayA">...</span><button onclick="speakItem(dbs.A.current.en)" style="background:none; font-size:30px;">🔊</button></div>
@@ -167,7 +167,7 @@
                 <select id="gameModeD" class="card-mode-selector" onchange="syncFromGame('D')">
                     <option value="en">Solo Eng</option>
                     <option value="it">Solo Ita</option>
-                    <option value="alt">Modalità Alt</option>
+                    <option value="alt" selected>Modalità Alt</option>
                 </select>
             </div>
             <div class="word-display"><span id="displayD">...</span><button onclick="speakItem(dbs.D.current.en)" style="background:none; font-size:30px;">🔊</button></div>
@@ -207,7 +207,7 @@
                 <select id="gameModeB" class="card-mode-selector" onchange="syncFromGame('B')">
                     <option value="en">Solo Eng</option>
                     <option value="it">Solo Ita</option>
-                    <option value="alt">Modalità Alt</option>
+                    <option value="alt" selected>Modalità Alt</option>
                 </select>
             </div>
             <div class="word-display"><span id="displayB">...</span><button onclick="speakItem(dbs.B.current.en)" style="background:none; font-size:30px;">🔊</button></div>
@@ -247,7 +247,7 @@
                 <select id="gameModeC" class="card-mode-selector" onchange="syncFromGame('C')">
                     <option value="en">Eng -> Ita</option>
                     <option value="it">Ita -> Eng</option>
-                    <option value="alt">Modalità Alt</option>
+                    <option value="alt" selected>Modalità Alt</option>
                 </select>
             </div>
             <div class="word-display"><span id="displayC">...</span><button id="speakBtnC" onclick="speakItem(dbs.C.current.full)" style="background:none; font-size:30px;">🔊</button></div>
@@ -284,17 +284,13 @@
 
 <script>
     const isIPhone = /iPhone|iPod|iPad/i.test(navigator.userAgent);
-    
-    // Cambia questa stringa per ogni sito diverso (es: 'SITO_A', 'SITO_B', ecc.)
-    const APP_PREFIX = 'GITHUB_PROJECT_1'; 
-
+    const APP_PREFIX = 'GITHUB_PROJECT_1';
     let dbs = {
         A: { key: APP_PREFIX + '_DATABASE_A', data: [], deck: [], current: null },
-        D: { key: APP_PREFIX + '_DATABASE_D', data: [], deck: [], current: null }, // Nuovo database identico al 1
+        D: { key: APP_PREFIX + '_DATABASE_D', data: [], deck: [], current: null },
         B: { key: APP_PREFIX + '_DATABASE_B', data: [], deck: [], current: null },
         C: { key: APP_PREFIX + '_VERBI_PRO', data: [], deck: [], current: null }
     };
-
     let currentEditState = { t: null, i: null };
 
     function manualEdit(t, i) {
@@ -432,7 +428,7 @@
     function syncFromGame(t) {
         if (!dbs[t].current) return;
         dbs[t].current.mode = document.getElementById('gameMode' + t).value;
-        save(t); if(t === 'C') nextVerb(true); else nextCard(t, true);
+        save(t); if(t === 'C') nextVerb(true); else nextCard(t, true); renderTable(t);
     }
 
     function forceAltRotation(t) {
@@ -454,14 +450,27 @@
         }
         document.getElementById('game' + t).style.display = "block";
         document.getElementById('restart' + t).style.display = "none";
-        if(!keepCurrent) dbs[t].current = dbs[t].deck.pop();
+
+        if(!keepCurrent) {
+            dbs[t].current = dbs[t].deck.pop();
+            // ROTAZIONE AUTOMATICA PER MODALITÀ ALT
+            if(dbs[t].current && dbs[t].current.mode === 'alt') {
+                dbs[t].current.lastAltState = (dbs[t].current.lastAltState === 'it') ? 'en' : 'it';
+                save(t);
+                renderTable(t);
+            }
+        }
+        
         if(!dbs[t].current) return;
         const mode = dbs[t].current.mode || 'en';
         document.getElementById('gameMode' + t).value = mode;
+        
         let showEn = (mode === 'en') || (mode === 'alt' && dbs[t].current.lastAltState !== 'it');
         if(mode === 'it') showEn = false;
+        
         document.getElementById('display' + t).innerText = showEn ? dbs[t].current.en : dbs[t].current.it;
         dbs[t].current._target = showEn ? dbs[t].current.it : dbs[t].current.en;
+        
         if(!keepCurrent) { document.getElementById('ans' + t).value = ""; document.getElementById('fb' + t).innerText = ""; btn.innerText = "CONTROLLA"; }
         document.getElementById('info' + t).innerText = `RESTANTI: ${dbs[t].deck.length + (dbs[t].current ? 1 : 0)}`;
         if (!isIPhone) document.getElementById('ans' + t).focus();
@@ -469,10 +478,7 @@
 
     function checkGeneric(t) {
         const btn = document.getElementById('check' + t);
-        if(btn.innerText === "PROSSIMO") { 
-            if(dbs[t].current && dbs[t].current.mode === 'alt') { dbs[t].current.lastAltState = (dbs[t].current.lastAltState === 'it') ? 'en' : 'it'; save(t); }
-            nextCard(t); return;
-        }
+        if(btn.innerText === "PROSSIMO") { nextCard(t); return; }
         document.getElementById('fb' + t).innerText = formatText(dbs[t].current._target).replace(/, /g, ',\n');
         btn.innerText = "PROSSIMO";
     }
@@ -486,14 +492,27 @@
         }
         document.getElementById('gameC').style.display = "block";
         document.getElementById('restartC').style.display = "none";
-        if(!keepCurrent) dbs.C.current = dbs.C.deck.pop();
+
+        if(!keepCurrent) {
+            dbs.C.current = dbs.C.deck.pop();
+            // ROTAZIONE AUTOMATICA PER MODALITÀ ALT
+            if(dbs.C.current && dbs.C.current.mode === 'alt') {
+                dbs.C.current.lastAltState = (dbs.C.current.lastAltState === 'it') ? 'en' : 'it';
+                save('C');
+                renderTable('C');
+            }
+        }
+
         if(!dbs.C.current) return;
         const mode = dbs.C.current.mode || 'en';
         document.getElementById('gameModeC').value = mode;
+        
         let showEn = (mode === 'en') || (mode === 'alt' && dbs.C.current.lastAltState !== 'it');
         if(mode === 'it') showEn = false;
+        
         document.getElementById('displayC').innerText = showEn ? dbs.C.current.base : dbs.C.current.it;
         document.getElementById('speakBtnC').setAttribute('onclick', `speakItem('${dbs.C.current.full.replace(/'/g, "\\'")}')`);
+        
         if(!keepCurrent) { document.getElementById('ansC').value = ""; document.getElementById('fbC').innerText = ""; btn.innerText = "CONTROLLA"; }
         document.getElementById('infoC').innerText = `RESTANTI: ${dbs.C.deck.length + (dbs.C.current ? 1 : 0)}`;
         if (!isIPhone) document.getElementById('ansC').focus();
@@ -501,10 +520,7 @@
 
     function checkVerb() {
         const btn = document.getElementById('checkC');
-        if(btn.innerText === "PROSSIMO") { 
-            if(dbs.C.current && dbs.C.current.mode === 'alt') { dbs.C.current.lastAltState = (dbs.C.current.lastAltState === 'it') ? 'en' : 'it'; save('C'); }
-            nextVerb(); return;
-        }
+        if(btn.innerText === "PROSSIMO") { nextVerb(); return; }
         const paradigm = formatText(dbs.C.current.full), translation = formatText(dbs.C.current.it).replace(/, /g, ',\n'), mode = dbs.C.current.mode || 'en';
         const showingIta = (mode === 'it') || (mode === 'alt' && dbs.C.current.lastAltState === 'it');
         document.getElementById('fbC').innerText = showingIta ? formatText(dbs.C.current.base) + " - " + paradigm : paradigm + "\n(" + translation + ")";
@@ -544,19 +560,15 @@
     function refreshList(t) { 
         document.getElementById('search' + t).value = "";
         if (t === 'C') {
-            document.getElementById('newBaseC').value = "";
-            document.getElementById('newFullC').value = "";
-            document.getElementById('newItC').value = "";
+            document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = "";
         } else {
-            document.getElementById('newEn' + t).value = "";
-            document.getElementById('newIt' + t).value = "";
+            document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = "";
         }
         renderTable(t); 
         showToast("Campi puliti e lista aggiornata!");
     }
 
     function postponeAll(t) { if(confirm("Posticipare TUTTI?")) { const future = Date.now() + 2592000000; dbs[t].data.forEach(w => w.nextReview = future); save(t); buildDeck(t); renderTable(t); t === 'C' ? nextVerb() : nextCard(t); } }
-
     function reactivateAll(t) { if(confirm("Riattivare TUTTI?")) { dbs[t].data.forEach(w => w.nextReview = 0); save(t); buildDeck(t); renderTable(t); t === 'C' ? nextVerb() : nextCard(t); } }
     
     function togglePause(t, i) { 
@@ -571,12 +583,7 @@
     function manualDelete(t, i) { 
         if(confirm("Eliminare?")) { 
             const idx = (i===undefined)?dbs[t].data.indexOf(dbs[t].current):i;
-            if(idx > -1) {
-                dbs[t].data.splice(idx,1);
-                save(t); 
-                if(i===undefined) { t === 'C' ? nextVerb(true) : nextCard(t, true); } 
-                else { buildDeck(t); renderTable(t); }
-            }
+            if(idx > -1) { dbs[t].data.splice(idx,1); save(t); if(i===undefined) { t === 'C' ? nextVerb(true) : nextCard(t, true); } else { buildDeck(t); renderTable(t); } }
         } 
     }
 
