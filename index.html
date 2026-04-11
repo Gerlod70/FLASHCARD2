@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flashcards Pro - V51.9.5</title>
+    <title>Flashcards Pro - V51.9.6</title>
     <style>
         :root { --blue: #007bff; --purple: #6f42c1; --dark-blue: #2c3e50; --bg: #f4f7f9; --text-dark: #2d3436; --deep-blue: #0984e3; --light-gray: #f1f2f6; --red: #e74c3c; --green: #27ae60; --orange: #f39c12; --teal: #00cec9; --grey: #636e72; --pink: #d63031; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; color: var(--text-dark); overflow-x: hidden; width: 100vw; }
@@ -398,6 +398,15 @@
         ['A', 'D', 'B', 'C'].forEach(t => {
             let saved = localStorage.getItem(dbs[t].key);
             dbs[t].data = saved ? JSON.parse(saved) : [];
+            
+            // RUOTA AUTOMATICAMENTE TUTTE LE PAROLE IN MODALITÀ ALT ANCHE ALL'AGGIORNAMENTO PAGINA
+            dbs[t].data.forEach(w => { 
+                if(w.mode === 'alt') {
+                    w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it';
+                }
+            });
+            save(t); 
+            
             buildDeck(t); 
             t === 'C' ? nextVerb() : nextCard(t);
             renderTable(t);
