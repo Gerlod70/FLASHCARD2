@@ -73,6 +73,7 @@
         .btn-backup { padding: 15px 25px; border-radius: 10px; color: white; font-weight: bold; font-size: 14px; cursor: pointer; }
         .btn-export { background: #2d3436; }
         .btn-import { background: #636e72; }
+        .btn-replace { background: #e67e22; }
         #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: bold; pointer-events: none; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         select { padding: 6px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
@@ -278,8 +279,9 @@
 
     <div class="backup-footer">
         <button class="btn-backup btn-export" onclick="exportData()">💾 ESPORTA TUTTI I DATI (BACKUP)</button>
-        <button class="btn-backup btn-import" onclick="document.getElementById('importFile').click()">📂 IMPORTA DATI (SOSTITUISCI)</button>
-        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+        <button class="btn-backup btn-replace" onclick="triggerImport(true)">📂 SOSTITUISCI LISTA (IMPORT)</button>
+        <button class="btn-backup btn-import" onclick="triggerImport(false)">📂 SINCRONIZZA DATI (MERGE)</button>
+        <input type="file" id="importFile" style="display:none" onchange="processFile(event)">
     </div>
 
 <script>
@@ -292,6 +294,12 @@
         C: { key: APP_PREFIX + '_VERBI_PRO', data: [], deck: [], current: null }
     };
     let currentEditState = { t: null, i: null };
+    let isReplaceMode = false;
+
+    function triggerImport(replace) {
+        isReplaceMode = replace;
+        document.getElementById('importFile').click();
+    }
 
     function manualEdit(t, i) {
         let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
@@ -357,14 +365,12 @@
     function handleIPhoneBtn(t) {
         if (!isIPhone) return;
         const btn = document.getElementById('btnAdd' + t), enVal = document.getElementById('newEn' + t).value, itVal = document.getElementById('newIt' + t).value;
-        if ((enVal && !itVal) || (itVal && !enVal)) {
-            btn.innerText = "TRADUCI";
-            btn.style.background = "#3498db";
-        } else {
-            btn.innerText = "AGGIUNGI +";
-            if(t === 'A') btn.style.background = "#27ae60";
+        if ((enVal && !itVal) || (itVal && !enVal)) { btn.innerText = "TRADUCI"; btn.style.background = "#3498db"; }
+        else { 
+            btn.innerText = "AGGIUNGI +"; 
+            if(t === 'A') btn.style.background = "#27ae60"; 
             else if(t === 'D') btn.style.background = "var(--pink)";
-            else if(t === 'B') btn.style.background = "#6f42c1";
+            else if(t === 'B') btn.style.background = "#6f42c1"; 
         }
     }
 
@@ -399,9 +405,7 @@
         ['A', 'D', 'B', 'C'].forEach(t => {
             let saved = localStorage.getItem(dbs[t].key);
             dbs[t].data = saved ? JSON.parse(saved) : [];
-            dbs[t].data.forEach(w => {
-                if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; }
-            });
+            dbs[t].data.forEach(w => { if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; } });
             save(t); buildDeck(t);
             t === 'C' ? nextVerb() : nextCard(t);
             renderTable(t);
@@ -414,9 +418,7 @@
     }
 
     function restartSession(t) {
-        dbs[t].data.forEach(w => {
-            if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; }
-        });
+        dbs[t].data.forEach(w => { if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; } });
         save(t); buildDeck(t); dbs[t].current = null;
         if(t === 'C') nextVerb(); else nextCard(t);
         renderTable(t); showToast("Sessione riavviata e lingue ruotate!");
@@ -454,185 +456,208 @@
     function nextCard(t, keepCurrent = false) {
         const btn = document.getElementById('check' + t);
         if (dbs[t].deck.length === 0 && !keepCurrent && !dbs[t].current) {
-            document.getElementById('display' + t).innerText = "FINITA! ✅";
-            document.getElementById('game' + t).style.display = "none";
-            document.getElementById('restart' + t).style.display = "inline-block";
+            document.getElementById('display' + t).innerText = "FINITO!";
+            document.getElementById('restart' + t).style.display = 'block';
+            document.getElementById('game' + t).style.display = 'none';
             return;
         }
-        document.getElementById('game' + t).style.display = "block";
-        document.getElementById('restart' + t).style.display = "none";
-        if(!keepCurrent) { dbs[t].current = dbs[t].deck.pop(); }
-        if(!dbs[t].current) return;
-        const mode = dbs[t].current.mode || 'en';
-        document.getElementById('gameMode' + t).value = mode;
-        let showEn = (mode === 'en') || (mode === 'alt' && dbs[t].current.lastAltState !== 'it');
-        if(mode === 'it') showEn = false;
-        document.getElementById('display' + t).innerText = showEn ? dbs[t].current.en : dbs[t].current.it;
-        dbs[t].current._target = showEn ? dbs[t].current.it : dbs[t].current.en;
-        if(!keepCurrent) {
-            document.getElementById('ans' + t).value = "";
-            document.getElementById('fb' + t).innerText = "";
-            btn.innerText = "CONTROLLA";
-        }
-        document.getElementById('info' + t).innerText = `RESTANTI: ${dbs[t].deck.length + (dbs[t].current ? 1 : 0)}`;
-        if (!isIPhone) document.getElementById('ans' + t).focus();
+        document.getElementById('restart' + t).style.display = 'none';
+        document.getElementById('game' + t).style.display = 'block';
+        if (!keepCurrent || !dbs[t].current) dbs[t].current = dbs[t].deck.shift();
+        const item = dbs[t].current, mode = document.getElementById('gameMode' + t).value;
+        let showLang = mode;
+        if (mode === 'alt') showLang = item.lastAltState || 'en';
+        document.getElementById('display' + t).innerText = (showLang === 'en') ? item.en : item.it;
+        document.getElementById('ans' + t).value = "";
+        document.getElementById('fb' + t).innerText = "";
+        btn.innerText = "CONTROLLA";
+        btn.onclick = () => checkGeneric(t);
+        document.getElementById('info' + t).innerText = `Parole rimanenti: ${dbs[t].deck.length + 1}`;
+        document.getElementById('ans' + t).focus();
     }
 
     function checkGeneric(t) {
-        const btn = document.getElementById('check' + t);
-        if(btn.innerText === "PROSSIMO") { nextCard(t); return; }
-        document.getElementById('fb' + t).innerText = formatText(dbs[t].current._target).replace(/, /g, ',\n');
-        btn.innerText = "PROSSIMO";
+        const btn = document.getElementById('check' + t), ans = document.getElementById('ans' + t).value.trim().toLowerCase(), item = dbs[t].current;
+        const mode = document.getElementById('gameMode' + t).value;
+        let showLang = mode;
+        if (mode === 'alt') showLang = item.lastAltState || 'en';
+        const correctStr = (showLang === 'en') ? item.it : item.en;
+        const equivalents = correctStr.toLowerCase().split(',').map(s => s.trim());
+        if (btn.innerText === "CONTINUA") { nextCard(t); return; }
+        if (equivalents.includes(ans)) {
+            document.getElementById('fb' + t).innerHTML = "✅ ESATTO!<br><small>" + correctStr.toUpperCase() + "</small>";
+            btn.innerText = "CONTINUA";
+            btn.onclick = () => nextCard(t);
+            speakItem(item.en);
+        } else {
+            document.getElementById('fb' + t).innerHTML = "❌ ERRATO.<br>La risposta era: " + correctStr.toUpperCase();
+        }
     }
 
     function nextVerb(keepCurrent = false) {
-        const btn = document.getElementById('checkC');
         if (dbs.C.deck.length === 0 && !keepCurrent && !dbs.C.current) {
-            document.getElementById('displayC').innerText = "FINITA! ✅";
-            document.getElementById('gameC').style.display = "none";
-            document.getElementById('restartC').style.display = "inline-block";
+            document.getElementById('displayC').innerText = "FINITO!";
+            document.getElementById('restartC').style.display = 'block';
+            document.getElementById('gameC').style.display = 'none';
             return;
         }
-        document.getElementById('gameC').style.display = "block";
-        document.getElementById('restartC').style.display = "none";
-        if(!keepCurrent) { dbs.C.current = dbs.C.deck.pop(); }
-        if(!dbs.C.current) return;
-        const mode = dbs.C.current.mode || 'en';
-        document.getElementById('gameModeC').value = mode;
-        let showFull = (mode === 'en') || (mode === 'alt' && dbs.C.current.lastAltState !== 'it');
-        if(mode === 'it') showFull = false;
-        document.getElementById('displayC').innerText = showFull ? dbs.C.current.full : dbs.C.current.it;
-        dbs.C.current._target = showFull ? dbs.C.current.it : dbs.C.current.full;
-        if(!keepCurrent) {
-            document.getElementById('ansC').value = "";
-            document.getElementById('fbC').innerText = "";
-            btn.innerText = "CONTROLLA";
-        }
-        document.getElementById('infoC').innerText = `RESTANTI: ${dbs.C.deck.length + (dbs.C.current ? 1 : 0)}`;
-        if (!isIPhone) document.getElementById('ansC').focus();
+        document.getElementById('restartC').style.display = 'none';
+        document.getElementById('gameC').style.display = 'block';
+        if (!keepCurrent || !dbs.C.current) dbs.C.current = dbs.C.deck.shift();
+        const item = dbs.C.current, mode = document.getElementById('gameModeC').value;
+        let showLang = mode;
+        if (mode === 'alt') showLang = item.lastAltState || 'en';
+        document.getElementById('displayC').innerText = (showLang === 'en') ? item.base : item.it;
+        document.getElementById('ansC').value = "";
+        document.getElementById('fbC').innerText = "";
+        const btn = document.getElementById('checkC');
+        btn.innerText = "CONTROLLA";
+        btn.onclick = checkVerb;
+        document.getElementById('infoC').innerText = `Verbi rimanenti: ${dbs.C.deck.length + 1}`;
+        document.getElementById('ansC').focus();
     }
 
     function checkVerb() {
-        const btn = document.getElementById('checkC');
-        if(btn.innerText === "PROSSIMO") { nextVerb(); return; }
-        document.getElementById('fbC').innerText = formatText(dbs.C.current._target).replace(/, /g, ',\n');
-        btn.innerText = "PROSSIMO";
+        const btn = document.getElementById('checkC'), ans = document.getElementById('ansC').value.trim().toLowerCase(), item = dbs.C.current;
+        const mode = document.getElementById('gameModeC').value;
+        let showLang = mode;
+        if (mode === 'alt') showLang = item.lastAltState || 'en';
+        const correctStr = (showLang === 'en') ? item.full : item.base;
+        if (btn.innerText === "CONTINUA") { nextVerb(); return; }
+        if (ans === correctStr.toLowerCase()) {
+            document.getElementById('fbC').innerHTML = "✅ ESATTO!<br><small>" + item.full.toUpperCase() + " = " + item.it.toUpperCase() + "</small>";
+            btn.innerText = "CONTINUA";
+            btn.onclick = nextVerb;
+            speakItem(item.full);
+        } else {
+            document.getElementById('fbC').innerHTML = "❌ ERRATO.<br>Corretto: " + correctStr.toUpperCase();
+        }
     }
 
     function addNewItem(t) {
         let newItem;
-        if(t === 'C') {
-            const b = document.getElementById('newBaseC'), f = document.getElementById('newFullC'), i = document.getElementById('newItC');
-            if(!b.value || !f.value || !i.value) return;
-            newItem = { base: b.value.trim(), full: f.value.trim(), it: i.value.trim(), mode: 'alt', lastAltState: 'it' };
-            b.value = ''; f.value = ''; i.value = ''; b.focus();
+        if (t === 'C') {
+            const base = document.getElementById('newBaseC').value.trim(), full = document.getElementById('newFullC').value.trim(), it = document.getElementById('newItC').value.trim();
+            if (!base || !full || !it) return;
+            newItem = { base, full, it, mode: 'alt', lastAltState: 'en', id: Date.now() };
+            document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = "";
         } else {
-            const en = document.getElementById('newEn' + t), it = document.getElementById('newIt' + t);
-            if(!en.value || !it.value) return;
-            newItem = { en: en.value.trim(), it: it.value.trim(), mode: 'alt', lastAltState: 'it' };
-            en.value = ''; it.value = ''; en.focus();
-            if (isIPhone) handleIPhoneBtn(t);
+            const en = document.getElementById('newEn' + t).value.trim(), it = document.getElementById('newIt' + t).value.trim();
+            if (!en || !it) return;
+            newItem = { en, it, mode: 'alt', lastAltState: 'en', id: Date.now() };
+            document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = "";
+            handleIPhoneBtn(t);
         }
-        dbs[t].data.push(newItem); save(t); buildDeck(t); renderTable(t);
-        if(!dbs[t].current || document.getElementById('display' + t).innerText.includes("FINITA")) { t === 'C' ? nextVerb() : nextCard(t); }
-        else { document.getElementById('info' + t).innerText = `RESTANTI: ${dbs[t].deck.length + 1}`; }
-        showToast("Aggiunto!");
-    }
-
-    function renderTable(t) {
-        const query = document.getElementById('search' + t).value.toLowerCase();
-        const table = document.getElementById('table' + t);
-        table.innerHTML = `<tr><th class="col-idx">#</th><th class="col-main">${t === 'C' ? 'BASE' : 'INGLESE'}</th><th class="col-trans">TRADUZIONE</th><th>MODO</th><th>AZIONI</th></tr>`;
-        dbs[t].data.forEach((item, i) => {
-            const textToSearch = t === 'C' ? (item.base + item.full + item.it) : (item.en + item.it);
-            if (!textToSearch.toLowerCase().includes(query)) return;
-            const isCurrent = dbs[t].current && (t === 'C' ? (dbs[t].current.base === item.base) : (dbs[t].current.en === item.en));
-            const row = table.insertRow();
-            if (isCurrent) row.style.backgroundColor = "#fff9c4";
-            row.innerHTML = `
-                <td>${i+1}</td>
-                <td class="col-main">${isCurrent ? '<span class="list-active-highlight">👉 ' + (t === 'C' ? item.base : item.en) + '</span>' : (t === 'C' ? item.base : item.en)}</td>
-                <td class="col-trans"><span class="hidden-text">${t === 'C' ? item.full + ' | ' + item.it : item.it}</span></td>
-                <td><select onchange="changeMode('${t}', ${i}, this.value)"><option value="en" ${item.mode==='en'?'selected':''}>Eng</option><option value="it" ${item.mode==='it'?'selected':''}>Ita</option><option value="alt" ${item.mode==='alt'?'selected':''}>Alt</option></select></td>
-                <td>
-                    <button class="list-btn btn-edit-list" onclick="manualEdit('${t}', ${i})">✏️</button>
-                    <button class="list-btn btn-postpone-list" onclick="togglePause('${t}', ${i})">⏳</button>
-                    <button class="list-btn btn-trash-list" onclick="manualDelete('${t}', ${i})">🗑️</button>
-                </td>`;
-        });
-    }
-
-    function changeMode(t, i, val) { dbs[t].data[i].mode = val; save(t); showToast("Modo aggiornato!"); }
-
-    function togglePause(t, i) {
-        let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
-        if (!item) return;
-        item.nextReview = Date.now() + (24 * 60 * 60 * 1000);
-        save(t); buildDeck(t);
-        if (i === undefined) { dbs[t].current = null; t === 'C' ? nextVerb() : nextCard(t); }
-        renderTable(t); showToast("Posticipato di 24h!");
+        dbs[t].data.push(newItem);
+        save(t); buildDeck(t); renderTable(t); showToast("Aggiunto!");
     }
 
     function manualDelete(t, i) {
-        if (!confirm("Eliminare definitivamente?")) return;
         if (i === undefined) {
-            const idx = dbs[t].data.findIndex(x => t === 'C' ? x.base === dbs[t].current.base : x.en === dbs[t].current.en);
-            if(idx > -1) dbs[t].data.splice(idx, 1);
-            dbs[t].current = null; t === 'C' ? nextVerb() : nextCard(t);
+            const item = dbs[t].current;
+            dbs[t].data = dbs[t].data.filter(w => w.id !== item.id);
+            dbs[t].current = null;
+            t === 'C' ? nextVerb() : nextCard(t);
         } else {
-            dbs[t].data.splice(i, 1); buildDeck(t);
+            dbs[t].data.splice(i, 1);
         }
-        save(t); renderTable(t); showToast("Eliminato!");
+        save(t); buildDeck(t); renderTable(t); showToast("Eliminato!");
     }
 
-    function postponeAll(t) {
-        if(!confirm("Posticipare TUTTI gli elementi di questo database?")) return;
-        const tomorrow = Date.now() + (24 * 60 * 60 * 1000);
-        dbs[t].data.forEach(item => item.nextReview = tomorrow);
-        save(t); buildDeck(t); dbs[t].current = null;
-        t === 'C' ? nextVerb() : nextCard(t);
-        renderTable(t); showToast("Tutto posticipato!");
+    function togglePause(t, i) {
+        let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
+        const isCurrentlyPaused = item.nextReview && item.nextReview > Date.now();
+        item.nextReview = isCurrentlyPaused ? null : Date.now() + (100 * 365 * 24 * 60 * 60 * 1000);
+        if (i === undefined) { dbs[t].current = null; t === 'C' ? nextVerb() : nextCard(t); }
+        save(t); buildDeck(t); renderTable(t); showToast(isCurrentlyPaused ? "Riattivato!" : "Posticipato!");
     }
 
-    function reactivateAll(t) {
-        dbs[t].data.forEach(item => delete item.nextReview);
-        save(t); buildDeck(t); renderTable(t);
-        if(!dbs[t].current || document.getElementById('display' + t).innerText.includes("FINITA")) { t === 'C' ? nextVerb() : nextCard(t); }
-        showToast("Tutto riattivato!");
+    function postponeAll(t) { dbs[t].data.forEach(w => w.nextReview = Date.now() + (100 * 365 * 24 * 60 * 60 * 1000)); save(t); buildDeck(t); dbs[t].current = null; t === 'C' ? nextVerb() : nextCard(t); renderTable(t); showToast("Tutti posticipati!"); }
+    function reactivateAll(t) { dbs[t].data.forEach(w => w.nextReview = null); save(t); buildDeck(t); t === 'C' ? nextVerb(true) : nextCard(t, true); renderTable(t); showToast("Tutti riattivati!"); }
+    function refreshList(t) { 
+        if(t === 'C') { document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = ""; } 
+        else { document.getElementById('newEn'+t).value = ""; document.getElementById('newIt'+t).value = ""; }
+        document.getElementById('search'+t).value = ""; 
+        renderTable(t); 
+        showToast("Campi svuotati!"); 
     }
 
-    function refreshList(t) { buildDeck(t); renderTable(t); showToast("Lista aggiornata!"); }
+    function renderTable(t) {
+        const table = document.getElementById('table' + t), search = document.getElementById('search' + t).value.toLowerCase();
+        let html = `<thead><tr><th class="col-idx">#</th><th class="col-main">${t === 'C' ? 'BASE' : 'INGLESE'}</th><th class="col-trans">TRADUZIONE</th><th>AZIONI</th></tr></thead><tbody>`;
+        dbs[t].data.forEach((item, i) => {
+            const isPaused = item.nextReview && item.nextReview > Date.now();
+            const textMain = t === 'C' ? item.base : item.en;
+            const textTrans = t === 'C' ? `${item.full} | ${item.it}` : item.it;
+            if (textMain.toLowerCase().includes(search) || textTrans.toLowerCase().includes(search)) {
+                const activeHighlight = (!isPaused && dbs[t].current && dbs[t].current.id === item.id) ? 'list-active-highlight' : '';
+                html += `<tr style="${isPaused ? 'opacity:0.5; background:#f9f9f9;' : ''}">
+                    <td>${i + 1}</td>
+                    <td class="col-main"><div class="${activeHighlight}">${textMain.toUpperCase()}</div></td>
+                    <td class="col-trans"><div class="hidden-text" onclick="speakItem('${t === 'C' ? item.full : item.en}')">${textTrans.toUpperCase()}</div></td>
+                    <td>
+                        <button class="list-btn btn-edit-list" onclick="manualEdit('${t}', ${i})">✏️</button>
+                        <button class="list-btn ${isPaused ? 'btn-reactivate-list' : 'btn-postpone-list'}" onclick="togglePause('${t}', ${i})">${isPaused ? '⚡' : '⏳'}</button>
+                        <button class="list-btn btn-trash-list" onclick="manualDelete('${t}', ${i})">🗑️</button>
+                    </td>
+                </tr>`;
+            }
+        });
+        table.innerHTML = html + '</tbody>';
+    }
 
     function exportData() {
-        const bundle = {};
-        ['A', 'D', 'B', 'C'].forEach(t => bundle[t] = dbs[t].data);
-        const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+        const backup = {};
+        ['A', 'D', 'B', 'C'].forEach(t => backup[t] = dbs[t].data);
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `flashcards_backup_${new Date().toISOString().slice(0,10)}.json`;
+        a.href = url;
+        a.download = `backup_flashcards_${new Date().toISOString().slice(0,10)}.json`;
         a.click();
     }
 
-    function importData(e) {
-        const file = e.target.files[0];
+    function processFile(event) {
+        const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = (e) => {
             try {
-                const bundle = JSON.parse(event.target.result);
-                if (!confirm("Questa operazione SOSTITUIRÀ tutti i dati attuali con quelli del backup. Continuare?")) return;
+                const backup = JSON.parse(e.target.result);
+                let addedCount = 0;
                 ['A', 'D', 'B', 'C'].forEach(t => {
-                    if (bundle[t]) {
-                        dbs[t].data = bundle[t];
+                    if (backup[t]) {
+                        if (isReplaceMode) {
+                            dbs[t].data = backup[t];
+                            addedCount += backup[t].length;
+                        } else {
+                            backup[t].forEach(newItem => {
+                                let exists = dbs[t].data.some(localItem => 
+                                    (t === 'C' ? (localItem.base === newItem.base && localItem.full === newItem.full) : (localItem.en === newItem.en))
+                                );
+                                if (!exists) { dbs[t].data.push(newItem); addedCount++; }
+                            });
+                        }
                         save(t);
                     }
                 });
-                alert("Importazione completata: la lista esistente è stata sostituita.");
+                alert(isReplaceMode ? "Lista sostituita con successo!" : `Sincronizzazione completata! Aggiunti ${addedCount} nuovi elementi.`);
                 location.reload();
-            } catch(err) { alert("Errore nel caricamento del file."); }
+            } catch (err) { alert("File non valido."); }
         };
         reader.readAsText(file);
     }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const activeSection = document.querySelector('.db-section.active').id.replace('section', '');
+            if (document.activeElement.classList.contains('game-input')) {
+                const btn = document.getElementById('check' + activeSection);
+                if (btn) btn.click();
+            }
+        }
+    });
+
     window.onload = init;
 </script>
 </body>
