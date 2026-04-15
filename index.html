@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flashcards Pro - V51.9.7 (Sync Mode)</title>
+    <title>Flashcards Pro - V51.9.9 (Auto-List & Mirror Sync)</title>
     <style>
         :root { --blue: #007bff; --purple: #6f42c1; --dark-blue: #2c3e50; --bg: #f4f7f9; --text-dark: #2d3436; --deep-blue: #0984e3; --light-gray: #f1f2f6; --red: #e74c3c; --green: #27ae60; --orange: #f39c12; --teal: #00cec9; --grey: #636e72; --pink: #d63031; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; color: var(--text-dark); overflow-x: hidden; width: 100vw; }
@@ -162,81 +162,23 @@
 
     <section id="sectionD" class="db-section">
         <div class="card">
-            <div class="card-header">
-                <div id="infoD" style="font-size:14px; font-weight:bold; color:var(--pink);"></div>
-                <select id="gameModeD" class="card-mode-selector" onchange="syncFromGame('D')">
-                    <option value="en">Solo Eng</option>
-                    <option value="it">Solo Ita</option>
-                    <option value="alt" selected>Modalità Alt</option>
-                </select>
-            </div>
+            <div class="card-header"><div id="infoD" style="font-size:14px; font-weight:bold; color:var(--pink);"></div><select id="gameModeD" class="card-mode-selector" onchange="syncFromGame('D')"><option value="en">Solo Eng</option><option value="it">Solo Ita</option><option value="alt" selected>Modalità Alt</option></select></div>
             <div class="word-display"><span id="displayD">...</span><button onclick="speakItem(dbs.D.current.en)" style="background:none; font-size:30px;">🔊</button></div>
-            <div id="gameD">
-                <div class="input-group">
-                    <input type="text" id="ansD" class="game-input" placeholder="Traduci..." autocomplete="off">
-                    <button id="checkD" class="btn-check" onclick="checkGeneric('D')" style="background:var(--pink)">CONTROLLA</button>
-                </div>
-                <div id="fbD" class="feedback-area"></div>
-                <div class="game-controls">
-                    <button class="btn-act btn-edit" onclick="manualEdit('D')">Modifica</button>
-                    <button class="btn-act btn-postpone" onclick="togglePause('D')">Posticipa</button>
-                    <button class="btn-act btn-delete" onclick="manualDelete('D')">Elimina</button>
-                </div>
-            </div>
+            <div id="gameD"><div class="input-group"><input type="text" id="ansD" class="game-input" placeholder="Traduci..." autocomplete="off"><button id="checkD" class="btn-check" onclick="checkGeneric('D')" style="background:var(--pink)">CONTROLLA</button></div><div id="fbD" class="feedback-area"></div><div class="game-controls"><button class="btn-act btn-edit" onclick="manualEdit('D')">Modifica</button><button class="btn-act btn-postpone" onclick="togglePause('D')">Posticipa</button><button class="btn-act btn-delete" onclick="manualDelete('D')">Elimina</button></div></div>
             <button id="restartD" class="btn-restart" onclick="restartSession('D')">RICOMINCIA SESSIONE 🔄</button>
         </div>
-        <div class="add-container">
-            <input type="text" id="newEnD" class="add-input" placeholder="Parola Inglese" oninput="handleIPhoneBtn('D')" onkeydown="handlePcTranslate(event, 'D', 'en')">
-            <input type="text" id="newItD" class="add-input" placeholder="Traduzione Italiana" oninput="handleIPhoneBtn('D')" onkeydown="handlePcTranslate(event, 'D', 'it')">
-            <button id="btnAddD" class="btn-add" style="background:var(--pink)" onclick="smartAdd('D')">AGGIUNGI +</button>
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchD" class="search-input" placeholder="Cerca..." oninput="renderTable('D')">
-            <button class="btn-tool" style="background:var(--grey)" onclick="refreshList('D')">🔄 AGGIORNA</button>
-            <button class="btn-tool" style="background:var(--orange)" onclick="postponeAll('D')">⏳ POSTICIPA TUTTO</button>
-            <button class="btn-tool" style="background:var(--teal)" onclick="reactivateAll('D')">⚡ RIATTIVA TUTTO</button>
-            <button class="btn-tool" style="background:var(--pink)" onclick="forceAltRotation('D')">RUOTA ALT 🔄</button>
-        </div>
+        <div class="add-container"><input type="text" id="newEnD" class="add-input" placeholder="Parola Inglese" oninput="handleIPhoneBtn('D')" onkeydown="handlePcTranslate(event, 'D', 'en')"><input type="text" id="newItD" class="add-input" placeholder="Traduzione Italiana" oninput="handleIPhoneBtn('D')" onkeydown="handlePcTranslate(event, 'D', 'it')"><button id="btnAddD" class="btn-add" style="background:var(--pink)" onclick="smartAdd('D')">AGGIUNGI +</button></div>
         <div class="admin-panel"><div class="list-header">Lista Database 2</div><div class="scroll-area"><table id="tableD"></table></div></div>
     </section>
 
     <section id="sectionB" class="db-section">
         <div class="card">
-            <div class="card-header">
-                <div id="infoB" style="font-size:14px; font-weight:bold; color:var(--purple);"></div>
-                <select id="gameModeB" class="card-mode-selector" onchange="syncFromGame('B')">
-                    <option value="en">Solo Eng</option>
-                    <option value="it">Solo Ita</option>
-                    <option value="alt" selected>Modalità Alt</option>
-                </select>
-            </div>
+            <div class="card-header"><div id="infoB" style="font-size:14px; font-weight:bold; color:var(--purple);"></div><select id="gameModeB" class="card-mode-selector" onchange="syncFromGame('B')"><option value="en">Solo Eng</option><option value="it">Solo Ita</option><option value="alt" selected>Modalità Alt</option></select></div>
             <div class="word-display"><span id="displayB">...</span><button onclick="speakItem(dbs.B.current.en)" style="background:none; font-size:30px;">🔊</button></div>
-            <div id="gameB">
-                <div class="input-group">
-                    <input type="text" id="ansB" class="game-input" placeholder="Traduci..." autocomplete="off">
-                    <button id="checkB" class="btn-check" onclick="checkGeneric('B')" style="background:var(--purple)">CONTROLLA</button>
-                </div>
-                <div id="fbB" class="feedback-area"></div>
-                <div class="game-controls">
-                    <button class="btn-act btn-edit" onclick="manualEdit('B')">Modifica</button>
-                    <button class="btn-act btn-postpone" onclick="togglePause('B')">Posticipa</button>
-                    <button class="btn-act btn-delete" onclick="manualDelete('B')">Elimina</button>
-                </div>
-            </div>
+            <div id="gameB"><div class="input-group"><input type="text" id="ansB" class="game-input" placeholder="Traduci..." autocomplete="off"><button id="checkB" class="btn-check" onclick="checkGeneric('B')" style="background:var(--purple)">CONTROLLA</button></div><div id="fbB" class="feedback-area"></div><div class="game-controls"><button class="btn-act btn-edit" onclick="manualEdit('B')">Modifica</button><button class="btn-act btn-postpone" onclick="togglePause('B')">Posticipa</button><button class="btn-act btn-delete" onclick="manualDelete('B')">Elimina</button></div></div>
             <button id="restartB" class="btn-restart" onclick="restartSession('B')">RICOMINCIA SESSIONE 🔄</button>
         </div>
-        <div class="add-container">
-            <input type="text" id="newEnB" class="add-input" placeholder="Testo Inglese" oninput="handleIPhoneBtn('B')" onkeydown="handlePcTranslate(event, 'B', 'en')">
-            <input type="text" id="newItB" class="add-input" placeholder="Traduzione Italiana" oninput="handleIPhoneBtn('B')" onkeydown="handlePcTranslate(event, 'B', 'it')">
-            <button id="btnAddB" class="btn-add" style="background:var(--purple)" onclick="smartAdd('B')">AGGIUNGI +</button>
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchB" class="search-input" placeholder="Cerca..." oninput="renderTable('B')">
-            <button class="btn-tool" style="background:var(--grey)" onclick="refreshList('B')">🔄 AGGIORNA</button>
-            <button class="btn-tool" style="background:var(--orange)" onclick="postponeAll('B')">⏳ POSTICIPA TUTTO</button>
-            <button class="btn-tool" style="background:var(--teal)" onclick="reactivateAll('B')">⚡ RIATTIVA TUTTO</button>
-            <button class="btn-tool" style="background:var(--purple)" onclick="forceAltRotation('B')">RUOTA ALT 🔄</button>
-        </div>
+        <div class="add-container"><input type="text" id="newEnB" class="add-input" placeholder="Testo Inglese" oninput="handleIPhoneBtn('B')" onkeydown="handlePcTranslate(event, 'B', 'en')"><input type="text" id="newItB" class="add-input" placeholder="Traduzione Italiana" oninput="handleIPhoneBtn('B')" onkeydown="handlePcTranslate(event, 'B', 'it')"><button id="btnAddB" class="btn-add" style="background:var(--purple)" onclick="smartAdd('B')">AGGIUNGI +</button></div>
         <div class="admin-panel"><div class="list-header">Lista Lesson and Grammar</div><div class="scroll-area"><table id="tableB"></table></div></div>
     </section>
 
@@ -265,7 +207,12 @@
             </div>
             <button id="restartC" class="btn-restart" onclick="restartSession('C')">RICOMINCIA SESSIONE 🔄</button>
         </div>
-        <div class="add-container"><input type="text" id="newBaseC" class="add-input" placeholder="Base" onkeydown="if(event.key==='Enter') addNewItem('C')"><input type="text" id="newFullC" class="add-input" placeholder="Paradigma" onkeydown="if(event.key==='Enter') addNewItem('C')"><input type="text" id="newItC" class="add-input" placeholder="Traduzione" onkeydown="if(event.key==='Enter') addNewItem('C')"><button class="btn-add" style="background:var(--dark-blue)" onclick="addNewItem('C')">AGGIUNGI +</button></div>
+        <div class="add-container">
+            <input type="text" id="newBaseC" class="add-input" placeholder="Base">
+            <input type="text" id="newFullC" class="add-input" placeholder="Paradigma">
+            <input type="text" id="newItC" class="add-input" placeholder="Traduzione">
+            <button class="btn-add" style="background:var(--dark-blue)" onclick="addNewItem('C')">AGGIUNGI +</button>
+        </div>
         <div class="search-container">
             <input type="text" id="searchC" class="search-input" placeholder="Cerca..." oninput="renderTable('C')">
             <button class="btn-tool" style="background:var(--grey)" onclick="refreshList('C')">🔄 AGGIORNA</button>
@@ -278,7 +225,7 @@
 
     <div class="backup-footer">
         <button class="btn-backup btn-export" onclick="exportData()">💾 ESPORTA TUTTI I DATI (BACKUP)</button>
-        <button class="btn-backup btn-import" onclick="document.getElementById('importFile').click()">📂 SINCRONIZZA DATI (MERGE)</button>
+        <button class="btn-backup btn-import" onclick="document.getElementById('importFile').click()">📂 SINCRONIZZA DATI (MIRROR SYNC)</button>
         <input type="file" id="importFile" style="display:none" onchange="importData(event)">
     </div>
 
@@ -293,6 +240,7 @@
     };
     let currentEditState = { t: null, i: null };
 
+    // --- LOGICA MODIFICA ---
     function manualEdit(t, i) {
         let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
         if (!item) return;
@@ -330,6 +278,7 @@
 
     function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
+    // --- TRADUZIONE ---
     async function translateText(text, from, to) {
         if(!text || text.trim() === "") return "";
         try {
@@ -357,15 +306,8 @@
     function handleIPhoneBtn(t) {
         if (!isIPhone) return;
         const btn = document.getElementById('btnAdd' + t), enVal = document.getElementById('newEn' + t).value, itVal = document.getElementById('newIt' + t).value;
-        if ((enVal && !itVal) || (itVal && !enVal)) {
-            btn.innerText = "TRADUCI";
-            btn.style.background = "#3498db";
-        } else {
-            btn.innerText = "AGGIUNGI +";
-            if(t === 'A') btn.style.background = "#27ae60";
-            else if(t === 'D') btn.style.background = "var(--pink)";
-            else if(t === 'B') btn.style.background = "#6f42c1";
-        }
+        if ((enVal && !itVal) || (itVal && !enVal)) { btn.innerText = "TRADUCI"; btn.style.background = "#3498db"; } 
+        else { btn.innerText = "AGGIUNGI +"; if(t === 'A') btn.style.background = "#27ae60"; else if(t === 'D') btn.style.background = "var(--pink)"; else if(t === 'B') btn.style.background = "#6f42c1"; }
     }
 
     async function smartAdd(t) {
@@ -377,77 +319,35 @@
         } else { addNewItem(t); }
     }
 
-    function formatText(text) { if(!text) return ""; return text.split(',').map(item => item.trim()).join(', ').toUpperCase(); }
-
-    function speakItem(text) {
-        if (!text) return;
-        window.speechSynthesis.cancel();
-        let cleanText = text.replace(/[/\\|()]/g, ' '); 
-        const msg = new SpeechSynthesisUtterance(cleanText);
-        msg.lang = 'en-US';
-        window.speechSynthesis.speak(msg);
-    }
-
-    function showToast(msg) {
-        const t = document.getElementById("toast");
-        t.innerText = msg; t.className = "show";
-        setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
-    }
-
+    // --- CORE ---
     function init() {
         ['A', 'D', 'B', 'C'].forEach(t => {
             let saved = localStorage.getItem(dbs[t].key);
             dbs[t].data = saved ? JSON.parse(saved) : [];
-            dbs[t].data.forEach(w => { 
-                if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; }
-            });
-            save(t); buildDeck(t); t === 'C' ? nextVerb() : nextCard(t); renderTable(t);
+            save(t); buildDeck(t); 
+            if(t === 'C') { nextVerb(); renderTable('C'); } // MOSTRA SUBITO LA LISTA DEI VERBI
+            else nextCard(t);
         });
     }
+
+    function save(t) { localStorage.setItem(dbs[t].key, JSON.stringify(dbs[t].data)); }
 
     function buildDeck(t) { 
         const now = Date.now();
         dbs[t].deck = dbs[t].data.filter(w => !w.nextReview || now > w.nextReview).sort(() => Math.random() - 0.5);
     }
 
-    function restartSession(t) {
-        dbs[t].data.forEach(w => { 
-            if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; }
-        });
-        save(t); buildDeck(t); dbs[t].current = null;
-        if(t === 'C') nextVerb(); else nextCard(t); 
-        renderTable(t);
-        showToast("Sessione riavviata!");
-    }
-
-    function save(t) { localStorage.setItem(dbs[t].key, JSON.stringify(dbs[t].data)); }
-
     function switchTab(t) {
         document.querySelectorAll('.db-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-a','active-b','active-c','active-d'));
         document.getElementById('section' + t).classList.add('active');
         document.getElementById('nav'+t).classList.add('active-'+t.toLowerCase());
-        if(t === 'C') nextVerb(true); else nextCard(t, true); renderTable(t);
+        if(t === 'C') { nextVerb(true); renderTable('C'); } 
+        else { nextCard(t, true); renderTable(t); }
     }
 
-    function syncFromGame(t) {
-        if (!dbs[t].current) return;
-        dbs[t].current.mode = document.getElementById('gameMode' + t).value;
-        save(t); if(t === 'C') nextVerb(true); else nextCard(t, true); renderTable(t);
-    }
-
-    function forceAltRotation(t) {
-        const currentScroll = window.scrollY;
-        dbs[t].data.forEach(w => { if(w.mode === 'alt') w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; });
-        save(t);
-        if(t === 'C') nextVerb(true); else nextCard(t, true); 
-        renderTable(t); 
-        window.scrollTo(0, currentScroll);
-        showToast("Rotazione Alt completata!");
-    }
-
+    // --- GAME ENGINE ---
     function nextCard(t, keepCurrent = false) {
-        const btn = document.getElementById('check' + t);
         if (dbs[t].deck.length === 0 && !keepCurrent && !dbs[t].current) { 
             document.getElementById('display' + t).innerText = "FINITA! ✅";
             document.getElementById('game' + t).style.display = "none"; 
@@ -455,28 +355,25 @@
         }
         document.getElementById('game' + t).style.display = "block";
         document.getElementById('restart' + t).style.display = "none";
-        if(!keepCurrent) { dbs[t].current = dbs[t].deck.pop(); }
+        if(!keepCurrent) dbs[t].current = dbs[t].deck.pop();
         if(!dbs[t].current) return;
         const mode = dbs[t].current.mode || 'en';
-        document.getElementById('gameMode' + t).value = mode;
         let showEn = (mode === 'en') || (mode === 'alt' && dbs[t].current.lastAltState !== 'it');
         if(mode === 'it') showEn = false;
         document.getElementById('display' + t).innerText = showEn ? dbs[t].current.en : dbs[t].current.it;
         dbs[t].current._target = showEn ? dbs[t].current.it : dbs[t].current.en;
-        if(!keepCurrent) { document.getElementById('ans' + t).value = ""; document.getElementById('fb' + t).innerText = ""; btn.innerText = "CONTROLLA"; }
+        if(!keepCurrent) { document.getElementById('ans' + t).value = ""; document.getElementById('fb' + t).innerText = ""; document.getElementById('check' + t).innerText = "CONTROLLA"; }
         document.getElementById('info' + t).innerText = `RESTANTI: ${dbs[t].deck.length + (dbs[t].current ? 1 : 0)}`;
-        if (!isIPhone) document.getElementById('ans' + t).focus();
     }
 
     function checkGeneric(t) {
         const btn = document.getElementById('check' + t);
         if(btn.innerText === "PROSSIMO") { nextCard(t); return; }
-        document.getElementById('fb' + t).innerText = formatText(dbs[t].current._target).replace(/, /g, ',\n');
+        document.getElementById('fb' + t).innerText = dbs[t].current._target.toUpperCase();
         btn.innerText = "PROSSIMO";
     }
 
     function nextVerb(keepCurrent = false) {
-        const btn = document.getElementById('checkC');
         if (dbs.C.deck.length === 0 && !keepCurrent && !dbs.C.current) {
             document.getElementById('displayC').innerText = "FINITA! ✅";
             document.getElementById('gameC').style.display = "none";
@@ -484,116 +381,76 @@
         }
         document.getElementById('gameC').style.display = "block";
         document.getElementById('restartC').style.display = "none";
-        if(!keepCurrent) { dbs.C.current = dbs.C.deck.pop(); }
+        if(!keepCurrent) dbs.C.current = dbs.C.deck.pop();
         if(!dbs.C.current) return;
         const mode = dbs.C.current.mode || 'en';
-        document.getElementById('gameModeC').value = mode;
         let showEn = (mode === 'en') || (mode === 'alt' && dbs.C.current.lastAltState !== 'it');
         if(mode === 'it') showEn = false;
         document.getElementById('displayC').innerText = showEn ? dbs.C.current.base : dbs.C.current.it;
-        document.getElementById('speakBtnC').setAttribute('onclick', `speakItem('${dbs.C.current.full.replace(/'/g, "\\'")}')`);
-        if(!keepCurrent) { document.getElementById('ansC').value = ""; document.getElementById('fbC').innerText = ""; btn.innerText = "CONTROLLA"; }
-        document.getElementById('info' + t === 'C' ? 'C' : t).innerText = `RESTANTI: ${dbs.C.deck.length + (dbs.C.current ? 1 : 0)}`;
-        if (!isIPhone) document.getElementById('ansC').focus();
+        if(!keepCurrent) { document.getElementById('ansC').value = ""; document.getElementById('fbC').innerText = ""; document.getElementById('checkC').innerText = "CONTROLLA"; }
+        document.getElementById('infoC').innerText = `RESTANTI: ${dbs.C.deck.length + (dbs.C.current ? 1 : 0)}`;
     }
 
     function checkVerb() {
         const btn = document.getElementById('checkC');
         if(btn.innerText === "PROSSIMO") { nextVerb(); return; }
-        const paradigm = formatText(dbs.C.current.full), translation = formatText(dbs.C.current.it).replace(/, /g, ',\n'), mode = dbs.C.current.mode || 'en';
-        const showingIta = (mode === 'it') || (mode === 'alt' && dbs.C.current.lastAltState === 'it');
-        document.getElementById('fbC').innerText = showingIta ? formatText(dbs.C.current.base) + " - " + paradigm : paradigm + "\n(" + translation + ")";
+        document.getElementById('fbC').innerText = dbs.C.current.full.toUpperCase() + "\n(" + dbs.C.current.it.toUpperCase() + ")";
         btn.innerText = "PROSSIMO";
     }
 
+    // --- TABELLE ---
     function renderTable(t) {
         const table = document.getElementById('table' + t), query = document.getElementById('search' + t).value.toLowerCase(), now = Date.now();
-        table.innerHTML = `<tr><th class="col-idx">#</th><th class="col-main">Principale</th><th class="col-trans">Traduzione</th><th>Lingua Predef.</th><th>🔊</th><th>✏️</th><th>P/R</th><th>🗑️</th></tr>`;
+        table.innerHTML = `<tr><th class="col-idx">#</th><th class="col-main">Principale</th><th class="col-trans">Traduzione</th><th>Lingua</th><th>🔊</th><th>✏️</th><th>P/R</th><th>🗑️</th></tr>`;
         dbs[t].data.forEach((w, idx) => {
             if ((t === 'C' ? w.base : w.en).toLowerCase().includes(query) || w.it.toLowerCase().includes(query)) {
-                const isP = w.nextReview > now, mType = w.mode || 'en';
-                let curMain, curTrans, speakText;
-                if (t === 'C') {
-                    speakText = w.full; const horizSpacer = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;➔&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-                    if(mType === 'it') { curMain = w.it; curTrans = `${w.base} | ${w.full}`; }
-                    else if(mType === 'alt') { const showEn = (w.lastAltState !== 'it'); curMain = showEn ? w.base : w.it; curTrans = showEn ? `${w.full}${horizSpacer}[ ${w.it} ]` : w.full; }
-                    else { curMain = w.base; curTrans = `${w.full}${horizSpacer}[ ${w.it} ]`; }
-                } else {
-                    speakText = w.en;
-                    if(mType === 'en') { curMain = w.en; curTrans = w.it; }
-                    else if(mType === 'it') { curMain = w.it; curTrans = w.en; }
-                    else { const isEnNow = (w.lastAltState !== 'it'); curMain = isEnNow ? w.en : w.it; curTrans = isEnNow ? w.it : w.en; }
-                }
+                const isP = w.nextReview > now;
                 const row = table.insertRow();
-                let mainContent = isP ? curMain + " (P)" : `<span class="list-active-highlight">${curMain}</span>`;
-                row.innerHTML = `<td class="col-idx">${idx+1}</td><td class="col-main">${mainContent}</td><td class="col-trans"><span class="hidden-text" onclick="togglePause('${t}',${idx})">${curTrans}</span></td><td><select onchange="updateMode('${t}',${idx},this.value)"><option value="en" ${mType==='en'?'selected':''}>En</option><option value="it" ${mType==='it'?'selected':''}>Ita</option><option value="alt" ${mType==='alt'?'selected':''}>Alt</option></select></td><td><button class="list-btn" style="background:none; font-size:18px;" onclick="speakItem('${speakText.replace(/'/g,"\\")}')">🔊</button></td><td><button class="list-btn btn-edit-list" onclick="manualEdit('${t}',${idx})">✏️</button></td><td><button class="list-btn ${isP ? 'btn-reactivate-list' : 'btn-postpone-list'}" onclick="togglePause('${t}',${idx})">${isP ? 'R' : 'P'}</button></td><td><button class="list-btn btn-trash-list" onclick="manualDelete('${t}',${idx})">🗑️</button></td>`;
+                row.innerHTML = `<td class="col-idx">${idx+1}</td><td class="col-main">${t==='C'?w.base:w.en}</td><td class="col-trans"><span class="hidden-text">${t==='C'?w.full:w.it}</span></td><td>${w.mode}</td><td><button class="list-btn" onclick="speakItem('${(t==='C'?w.full:w.en).replace(/'/g,"\\")}')">🔊</button></td><td><button class="list-btn btn-edit-list" onclick="manualEdit('${t}',${idx})">✏️</button></td><td><button class="list-btn" onclick="togglePause('${t}',${idx})">${isP?'R':'P'}</button></td><td><button class="list-btn btn-trash-list" onclick="manualDelete('${t}',${idx})">🗑️</button></td>`;
             }
         });
     }
 
-    function updateMode(t, idx, val) { 
-        dbs[t].data[idx].mode = val;
-        save(t); if(dbs[t].current === dbs[t].data[idx]) { if(t === 'C') nextVerb(true); else nextCard(t, true); } renderTable(t);
+    function manualDelete(t, i) { 
+        if(confirm("Eliminare?")) { 
+            const idx = (i===undefined)?dbs[t].data.indexOf(dbs[t].current):i;
+            if(idx > -1) { dbs[t].data.splice(idx,1); save(t); location.reload(); }
+        } 
     }
 
-    function refreshList(t) { 
-        document.getElementById('search' + t).value = "";
-        if (t === 'C') { document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = ""; } 
-        else { document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = ""; }
-        renderTable(t); showToast("Lista aggiornata!");
-    }
-
-    function postponeAll(t) { if(confirm("Posticipare TUTTI?")) { const future = Date.now() + 2592000000; dbs[t].data.forEach(w => w.nextReview = future); save(t); buildDeck(t); renderTable(t); t === 'C' ? nextVerb() : nextCard(t); } }
-    function reactivateAll(t) { if(confirm("Riattivare TUTTI?")) { dbs[t].data.forEach(w => w.nextReview = 0); save(t); buildDeck(t); renderTable(t); t === 'C' ? nextVerb() : nextCard(t); } }
-    
     function togglePause(t, i) { 
         let w = (i===undefined)?dbs[t].current:dbs[t].data[i];
         if(!w) return; 
         w.nextReview = (w.nextReview > Date.now()) ? 0 : Date.now() + 2592000000; 
-        save(t); if(i===undefined) { t === 'C' ? nextVerb(true) : nextCard(t, true); } else { buildDeck(t); renderTable(t); }
+        save(t); location.reload();
     }
-    
-    function manualDelete(t, i) { 
-        if(confirm("Eliminare?")) { 
-            const idx = (i===undefined)?dbs[t].data.indexOf(dbs[t].current):i;
-            if(idx > -1) { dbs[t].data.splice(idx,1); save(t); if(i===undefined) { t === 'C' ? nextVerb(true) : nextCard(t, true); } else { buildDeck(t); renderTable(t); } }
-        } 
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && document.getElementById('editModal').style.display !== 'flex') {
-            if (e.target.classList.contains('add-input') || e.target.classList.contains('search-input')) return;
-            e.preventDefault();
-            const active = document.querySelector('.db-section.active');
-            if (active) { const tid = active.id.replace('section', ''); tid === 'C' ? checkVerb() : checkGeneric(tid); }
-        }
-    });
 
     async function addNewItem(t) {
         let newItem = {};
-        const timestamp = Date.now();
+        const timestamp = Date.now() + Math.floor(Math.random() * 1000);
         if (t === 'C') {
             const base = document.getElementById('newBaseC').value.trim(), full = document.getElementById('newFullC').value.trim(), it = document.getElementById('newItC').value.trim();
             if(!base || !full || !it) return; 
             newItem = { id: "C_" + timestamp, base, full, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
-            dbs.C.data.push(newItem); save('C'); dbs.C.deck.push(newItem); renderTable('C');
+            dbs.C.data.push(newItem); save('C'); renderTable('C');
             document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = "";
         } else {
             const en = document.getElementById('newEn' + t).value.trim(), it = document.getElementById('newIt' + t).value.trim();
             if(!en || !it) return; 
             newItem = { id: t + "_" + timestamp, en, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
-            dbs[t].data.push(newItem); save(t); dbs[t].deck.push(newItem); renderTable(t);
-            document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = ""; if (isIPhone) handleIPhoneBtn(t);
+            dbs[t].data.push(newItem); save(t); renderTable(t);
+            document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = "";
         }
         showToast("Aggiunto!");
     }
 
+    // --- SYNC ENGINE (MIRROR) ---
     function exportData() {
         const allData = { A: dbs.A.data, D: dbs.D.data, B: dbs.B.data, C: dbs.C.data };
         const blob = new Blob([JSON.stringify(allData)], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `backup_flashcards_${new Date().toISOString().slice(0,10)}.json`;
+        a.download = `backup_flashcards.json`;
         a.click();
     }
 
@@ -604,27 +461,18 @@
         reader.onload = function(e) {
             try {
                 const imported = JSON.parse(e.target.result);
-                let addedCount = 0; let updatedCount = 0;
-                ['A', 'D', 'B', 'C'].forEach(t => {
-                    const importedList = Array.isArray(imported[t]) ? imported[t] : (imported[t]?.data || []);
-                    importedList.forEach(newItem => {
-                        let existingIndex = dbs[t].data.findIndex(item => item.id === newItem.id);
-                        if (existingIndex !== -1) {
-                            let existing = dbs[t].data[existingIndex];
-                            let changed = (t === 'C') ? (existing.base !== newItem.base || existing.full !== newItem.full || existing.it !== newItem.it) : (existing.en !== newItem.en || existing.it !== newItem.it);
-                            if (changed) { dbs[t].data[existingIndex] = { ...existing, ...newItem }; updatedCount++; }
-                        } else {
-                            dbs[t].data.push(newItem); addedCount++;
-                        }
-                    });
-                    save(t);
-                });
-                alert(`Sincronizzazione completata!\nAggiunti: ${addedCount}\nAggiornati: ${updatedCount}`);
+                if(!confirm("Questo sovrascriverà i dati locali rendendoli identici al file. Procedere?")) return;
+                ['A', 'D', 'B', 'C'].forEach(t => { if (imported[t]) { dbs[t].data = imported[t]; save(t); } });
+                alert("Sincronizzazione Mirror completata!");
                 location.reload();
-            } catch(err) { alert("Errore nel caricamento del file."); }
+            } catch(err) { alert("Errore nel caricamento."); }
         };
         reader.readAsText(file);
     }
+
+    function showToast(msg) { const t = document.getElementById("toast"); t.innerText = msg; t.className = "show"; setTimeout(() => { t.className = ""; }, 3000); }
+    function speakItem(text) { if (!text) return; window.speechSynthesis.cancel(); const msg = new SpeechSynthesisUtterance(text); msg.lang = 'en-US'; window.speechSynthesis.speak(msg); }
+
     window.onload = init;
 </script>
 </body>
