@@ -58,8 +58,8 @@
         th { background: #2d3436; padding: 15px 5px; font-size: 11px; color: white; text-transform: uppercase; text-align: center; position: sticky; top: 0; z-index: 10; }
         td { padding: 12px 4px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; vertical-align: middle; }
         .col-idx { width: 40px; }
-        .col-main { width: 230px; text-align: left !important; padding-left: 20px !important; font-weight: 700; word-break: break-word; }
-        .col-trans { width: 400px; text-align: left !important; }
+        .col-main { width: 230px; text-align: left !important; padding-left: 20px !important; font-weight: 700; word-break: break-word; cursor: pointer; }
+        .col-trans { width: 400px; text-align: left !important; cursor: pointer; }
         .list-active-highlight { background-color: #e3f2fd; padding: 4px 8px; border-radius: 6px; display: inline-block; }
         .list-btn { padding: 8px 12px; border-radius: 6px; font-weight: bold; color: white; min-width: 40px; }
         .btn-edit-list { background: var(--grey); }
@@ -213,7 +213,7 @@
             <div class="word-display"><span id="displayB">...</span><button onclick="speakItem(dbs.B.current.en)" style="background:none; font-size:30px;">🔊</button></div>
             <div id="gameB">
                 <div class="input-group">
-                    <input type="text" id="ansB" class="game-input" placeholder="Traduci..." autocomplete="off">
+                    <input type="text" id="ansB" class="game-input" placeholder="Testo Inglese..." autocomplete="off">
                     <button id="checkB" class="btn-check" onclick="checkGeneric('B')" style="background:var(--purple)">CONTROLLA</button>
                 </div>
                 <div id="fbB" class="feedback-area"></div>
@@ -278,7 +278,7 @@
 
     <div class="backup-footer">
         <button class="btn-backup btn-export" onclick="exportData()">💾 ESPORTA TUTTI I DATI (BACKUP)</button>
-        <button class="btn-backup btn-import" onclick="document.getElementById('importFile').click()">📂 SINCRONIZZA DATI (MERGE)</button>
+        <button class="btn-backup btn-import" onclick="document.getElementById('importFile').click()">📂 IMPORTA DATI DA FILE</button>
         <input type="file" id="importFile" style="display:none" onchange="importData(event)">
     </div>
 
@@ -292,6 +292,9 @@
         C: { key: APP_PREFIX + '_VERBI_PRO', data: [], deck: [], current: null }
     };
     let currentEditState = { t: null, i: null };
+
+    // FUNZIONE GENERATRICE ID
+    function generateId() { return Date.now() + Math.random().toString(36).substr(2, 9); }
 
     function manualEdit(t, i) {
         let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
@@ -357,15 +360,8 @@
     function handleIPhoneBtn(t) {
         if (!isIPhone) return;
         const btn = document.getElementById('btnAdd' + t), enVal = document.getElementById('newEn' + t).value, itVal = document.getElementById('newIt' + t).value;
-        if ((enVal && !itVal) || (itVal && !enVal)) {
-            btn.innerText = "TRADUCI";
-            btn.style.background = "#3498db";
-        } else {
-            btn.innerText = "AGGIUNGI +";
-            if(t === 'A') btn.style.background = "#27ae60";
-            else if(t === 'D') btn.style.background = "var(--pink)";
-            else if(t === 'B') btn.style.background = "#6f42c1";
-        }
+        if ((enVal && !itVal) || (itVal && !enVal)) { btn.innerText = "TRADUCI"; btn.style.background = "#3498db"; }
+        else { btn.innerText = "AGGIUNGI +"; if(t === 'A') btn.style.background = "#27ae60"; else if(t === 'D') btn.style.background = "var(--pink)"; else if(t === 'B') btn.style.background = "#6f42c1"; }
     }
 
     async function smartAdd(t) {
@@ -382,7 +378,7 @@
     function speakItem(text) {
         if (!text) return;
         window.speechSynthesis.cancel();
-        let cleanText = text.replace(/[/\\|()]/g, ' '); 
+        let cleanText = text.replace(/[/\\|()]/g, ' ');
         const msg = new SpeechSynthesisUtterance(cleanText);
         msg.lang = 'en-US';
         window.speechSynthesis.speak(msg);
@@ -390,7 +386,8 @@
 
     function showToast(msg) {
         const t = document.getElementById("toast");
-        t.innerText = msg; t.className = "show";
+        t.innerText = msg;
+        t.className = "show";
         setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
     }
 
@@ -399,36 +396,32 @@
             let saved = localStorage.getItem(dbs[t].key);
             dbs[t].data = saved ? JSON.parse(saved) : [];
             
-            dbs[t].data.forEach(w => { 
-                if(w.mode === 'alt') {
-                    w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it';
+            // ASSEGNA ID SE MANCANTI (MIGRAZIONE DATI ESISTENTI)
+            let updated = false;
+            dbs[t].data.forEach(item => {
+                if(!item.id) {
+                    item.id = generateId();
+                    updated = true;
                 }
             });
-            save(t); 
-            
-            buildDeck(t); 
+            if(updated) save(t);
+
+            buildDeck(t);
             t === 'C' ? nextVerb() : nextCard(t);
             renderTable(t);
         });
     }
 
-    function buildDeck(t) { 
+    function buildDeck(t) {
         const now = Date.now();
         dbs[t].deck = dbs[t].data.filter(w => !w.nextReview || now > w.nextReview).sort(() => Math.random() - 0.5);
     }
 
     function restartSession(t) {
-        dbs[t].data.forEach(w => { 
-            if(w.mode === 'alt') {
-                w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it';
-            }
-        });
-        save(t); 
-        buildDeck(t); 
-        dbs[t].current = null;
-        if(t === 'C') nextVerb(); else nextCard(t); 
-        renderTable(t);
-        showToast("Sessione riavviata e lingue ruotate!");
+        dbs[t].data.forEach(w => { if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; } });
+        save(t); buildDeck(t); dbs[t].current = null;
+        if(t === 'C') nextVerb(); else nextCard(t);
+        renderTable(t); showToast("Sessione riavviata!");
     }
 
     function save(t) { localStorage.setItem(dbs[t].key, JSON.stringify(dbs[t].data)); }
@@ -438,191 +431,207 @@
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-a','active-b','active-c','active-d'));
         document.getElementById('section' + t).classList.add('active');
         document.getElementById('nav'+t).classList.add('active-'+t.toLowerCase());
-        if(t === 'C') nextVerb(true); else nextCard(t, true); renderTable(t);
+        if(t === 'C') nextVerb(true); else nextCard(t, true);
+        renderTable(t);
     }
 
     function syncFromGame(t) {
         if (!dbs[t].current) return;
         dbs[t].current.mode = document.getElementById('gameMode' + t).value;
-        save(t); if(t === 'C') nextVerb(true); else nextCard(t, true); renderTable(t);
+        save(t);
+        if(t === 'C') nextVerb(true); else nextCard(t, true);
+        renderTable(t);
     }
 
     function forceAltRotation(t) {
         const currentScroll = window.scrollY;
         dbs[t].data.forEach(w => { if(w.mode === 'alt') w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; });
         save(t);
-        if(t === 'C') nextVerb(true); else nextCard(t, true); 
-        renderTable(t); 
-        window.scrollTo(0, currentScroll);
+        if(t === 'C') nextVerb(true); else nextCard(t, true);
+        renderTable(t); window.scrollTo(0, currentScroll);
         showToast("Rotazione Alt completata!");
     }
 
     function nextCard(t, keepCurrent = false) {
-        const btn = document.getElementById('check' + t);
-        if (dbs[t].deck.length === 0 && !keepCurrent && !dbs[t].current) { 
+        if (dbs[t].deck.length === 0 && !keepCurrent && !dbs[t].current) {
             document.getElementById('display' + t).innerText = "FINITA! ✅";
-            document.getElementById('game' + t).style.display = "none"; 
-            document.getElementById('restart' + t).style.display = "inline-block"; return;
+            document.getElementById('game' + t).style.display = "none";
+            document.getElementById('restart' + t).style.display = "inline-block";
+            return;
         }
         document.getElementById('game' + t).style.display = "block";
         document.getElementById('restart' + t).style.display = "none";
-
-        if(!keepCurrent) {
-            dbs[t].current = dbs[t].deck.pop();
-        }
-        
+        if(!keepCurrent) { dbs[t].current = dbs[t].deck.pop(); }
         if(!dbs[t].current) return;
         const mode = dbs[t].current.mode || 'en';
         document.getElementById('gameMode' + t).value = mode;
-        
         let showEn = (mode === 'en') || (mode === 'alt' && dbs[t].current.lastAltState !== 'it');
         if(mode === 'it') showEn = false;
-        
         document.getElementById('display' + t).innerText = showEn ? dbs[t].current.en : dbs[t].current.it;
         dbs[t].current._target = showEn ? dbs[t].current.it : dbs[t].current.en;
-        
-        if(!keepCurrent) { document.getElementById('ans' + t).value = ""; document.getElementById('fb' + t).innerText = ""; btn.innerText = "CONTROLLA"; }
-        document.getElementById('info' + t).innerText = `RESTANTI: ${dbs[t].deck.length + (dbs[t].current ? 1 : 0)}`;
-        if (!isIPhone) document.getElementById('ans' + t).focus();
-    }
-
-    function checkGeneric(t) {
-        const btn = document.getElementById('check' + t);
-        if(btn.innerText === "PROSSIMO") { nextCard(t); return; }
-        document.getElementById('fb' + t).innerText = formatText(dbs[t].current._target).replace(/, /g, ',\n');
-        btn.innerText = "PROSSIMO";
+        document.getElementById('fb' + t).innerText = "";
+        document.getElementById('ans' + t).value = "";
+        document.getElementById('ans' + t).focus();
+        document.getElementById('info' + t).innerText = `MANCANTI: ${dbs[t].deck.length + 1}`;
     }
 
     function nextVerb(keepCurrent = false) {
-        const btn = document.getElementById('checkC');
         if (dbs.C.deck.length === 0 && !keepCurrent && !dbs.C.current) {
             document.getElementById('displayC').innerText = "FINITA! ✅";
             document.getElementById('gameC').style.display = "none";
-            document.getElementById('restartC').style.display = "inline-block"; return;
+            document.getElementById('restartC').style.display = "inline-block";
+            return;
         }
         document.getElementById('gameC').style.display = "block";
         document.getElementById('restartC').style.display = "none";
-
-        if(!keepCurrent) {
-            dbs.C.current = dbs.C.deck.pop();
-        }
-
+        if(!keepCurrent) { dbs.C.current = dbs.C.deck.pop(); }
         if(!dbs.C.current) return;
         const mode = dbs.C.current.mode || 'en';
         document.getElementById('gameModeC').value = mode;
-        
-        let showEn = (mode === 'en') || (mode === 'alt' && dbs.C.current.lastAltState !== 'it');
-        if(mode === 'it') showEn = false;
-        
-        document.getElementById('displayC').innerText = showEn ? dbs.C.current.base : dbs.C.current.it;
-        document.getElementById('speakBtnC').setAttribute('onclick', `speakItem('${dbs.C.current.full.replace(/'/g, "\\'")}')`);
-        
-        if(!keepCurrent) { document.getElementById('ansC').value = ""; document.getElementById('fbC').innerText = ""; btn.innerText = "CONTROLLA"; }
-        document.getElementById('infoC').innerText = `RESTANTI: ${dbs.C.deck.length + (dbs.C.current ? 1 : 0)}`;
-        if (!isIPhone) document.getElementById('ansC').focus();
+        let showFull = (mode === 'en') || (mode === 'alt' && dbs.C.current.lastAltState !== 'it');
+        if(mode === 'it') showFull = false;
+        document.getElementById('displayC').innerText = showFull ? dbs.C.current.full : dbs.C.current.it;
+        dbs.C.current._target = showFull ? dbs.C.current.it : dbs.C.current.full;
+        document.getElementById('fbC').innerText = "";
+        document.getElementById('ansC').value = "";
+        document.getElementById('ansC').focus();
+        document.getElementById('infoC').innerText = `MANCANTI: ${dbs.C.deck.length + 1}`;
+    }
+
+    function checkGeneric(t) {
+        const ans = document.getElementById('ans' + t).value.trim().toLowerCase(), target = dbs[t].current._target.toLowerCase();
+        const feedback = document.getElementById('fb' + t);
+        if (ans === target) {
+            feedback.innerText = "CORRETTO! 🎉"; feedback.style.color = "var(--green)";
+            setTimeout(() => { if(dbs[t].current.mode === 'alt') dbs[t].current.lastAltState = (dbs[t].current.lastAltState === 'it') ? 'en' : 'it'; nextCard(t); }, 800);
+        } else {
+            feedback.innerText = `SBAGLIATO! ❌\nLa risposta era: ${target.toUpperCase()}`; feedback.style.color = "var(--red)";
+        }
     }
 
     function checkVerb() {
-        const btn = document.getElementById('checkC');
-        if(btn.innerText === "PROSSIMO") { nextVerb(); return; }
-        const paradigm = formatText(dbs.C.current.full), translation = formatText(dbs.C.current.it).replace(/, /g, ',\n'), mode = dbs.C.current.mode || 'en';
-        const showingIta = (mode === 'it') || (mode === 'alt' && dbs.C.current.lastAltState === 'it');
-        document.getElementById('fbC').innerText = showingIta ? formatText(dbs.C.current.base) + " - " + paradigm : paradigm + "\n(" + translation + ")";
-        btn.innerText = "PROSSIMO";
-    }
-
-    function renderTable(t) {
-        const table = document.getElementById('table' + t), query = document.getElementById('search' + t).value.toLowerCase(), now = Date.now();
-        table.innerHTML = `<tr><th class="col-idx">#</th><th class="col-main">Principale</th><th class="col-trans">Traduzione</th><th>Lingua Predef.</th><th>🔊</th><th>✏️</th><th>P/R</th><th>🗑️</th></tr>`;
-        dbs[t].data.forEach((w, idx) => {
-            if ((t === 'C' ? w.base : w.en).toLowerCase().includes(query) || w.it.toLowerCase().includes(query)) {
-                const isP = w.nextReview > now, mType = w.mode || 'en';
-                let curMain, curTrans, speakText;
-                if (t === 'C') {
-                    speakText = w.full; const horizSpacer = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;➔&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-                    if(mType === 'it') { curMain = w.it; curTrans = `${w.base} | ${w.full}`; }
-                    else if(mType === 'alt') { const showEn = (w.lastAltState !== 'it'); curMain = showEn ? w.base : w.it; curTrans = showEn ? `${w.full}${horizSpacer}[ ${w.it} ]` : w.full; }
-                    else { curMain = w.base; curTrans = `${w.full}${horizSpacer}[ ${w.it} ]`; }
-                } else {
-                    speakText = w.en;
-                    if(mType === 'en') { curMain = w.en; curTrans = w.it; }
-                    else if(mType === 'it') { curMain = w.it; curTrans = w.en; }
-                    else { const isEnNow = (w.lastAltState !== 'it'); curMain = isEnNow ? w.en : w.it; curTrans = isEnNow ? w.it : w.en; }
-                }
-                const row = table.insertRow();
-                let mainContent = isP ? curMain + " (P)" : `<span class="list-active-highlight">${curMain}</span>`;
-                row.innerHTML = `<td class="col-idx">${idx+1}</td><td class="col-main">${mainContent}</td><td class="col-trans"><span class="hidden-text" onclick="togglePause('${t}',${idx})">${curTrans}</span></td><td><select onchange="updateMode('${t}',${idx},this.value)"><option value="en" ${mType==='en'?'selected':''}>En</option><option value="it" ${mType==='it'?'selected':''}>Ita</option><option value="alt" ${mType==='alt'?'selected':''}>Alt</option></select></td><td><button class="list-btn" style="background:none; font-size:18px;" onclick="speakItem('${speakText.replace(/'/g,"\\")}')">🔊</button></td><td><button class="list-btn btn-edit-list" onclick="manualEdit('${t}',${idx})">✏️</button></td><td><button class="list-btn ${isP ? 'btn-reactivate-list' : 'btn-postpone-list'}" onclick="togglePause('${t}',${idx})">${isP ? 'R' : 'P'}</button></td><td><button class="list-btn btn-trash-list" onclick="manualDelete('${t}',${idx})">🗑️</button></td>`;
-            }
-        });
-    }
-
-    function updateMode(t, idx, val) { 
-        dbs[t].data[idx].mode = val;
-        save(t); if(dbs[t].current === dbs[t].data[idx]) { if(t === 'C') nextVerb(true); else nextCard(t, true); } renderTable(t);
-    }
-
-    function refreshList(t) { 
-        document.getElementById('search' + t).value = "";
-        if (t === 'C') {
-            document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = "";
+        const ans = document.getElementById('ansC').value.trim().toLowerCase(), target = dbs.C.current._target.toLowerCase(), base = dbs.C.current.base.toLowerCase();
+        const feedback = document.getElementById('fbC');
+        if (ans === target || ans === base) {
+            feedback.innerText = "CORRETTO! 🎉"; feedback.style.color = "var(--green)";
+            setTimeout(() => { if(dbs.C.current.mode === 'alt') dbs.C.current.lastAltState = (dbs.C.current.lastAltState === 'it') ? 'en' : 'it'; nextVerb(); }, 1200);
         } else {
-            document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = "";
+            feedback.innerText = `SBAGLIATO! ❌\nEra: ${target.toUpperCase()}`; feedback.style.color = "var(--red)";
         }
-        renderTable(t); 
-        showToast("Campi puliti e lista aggiornata!");
     }
 
-    function postponeAll(t) { if(confirm("Posticipare TUTTI?")) { const future = Date.now() + 2592000000; dbs[t].data.forEach(w => w.nextReview = future); save(t); buildDeck(t); renderTable(t); t === 'C' ? nextVerb() : nextCard(t); } }
-    function reactivateAll(t) { if(confirm("Riattivare TUTTI?")) { dbs[t].data.forEach(w => w.nextReview = 0); save(t); buildDeck(t); renderTable(t); t === 'C' ? nextVerb() : nextCard(t); } }
-    
-    function togglePause(t, i) { 
-        let w = (i===undefined)?dbs[t].current:dbs[t].data[i];
-        if(!w) return; 
-        w.nextReview = (w.nextReview > Date.now()) ? 0 : Date.now() + 2592000000; 
+    function togglePause(t) {
+        const item = dbs[t].current;
+        if (!item) return;
+        item.nextReview = Date.now() + (30 * 24 * 60 * 60 * 1000);
         save(t);
-        if(i===undefined) { t === 'C' ? nextVerb(true) : nextCard(t, true); } 
-        else { buildDeck(t); renderTable(t); }
-    }
-    
-    function manualDelete(t, i) { 
-        if(confirm("Eliminare?")) { 
-            const idx = (i===undefined)?dbs[t].data.indexOf(dbs[t].current):i;
-            if(idx > -1) { dbs[t].data.splice(idx,1); save(t); if(i===undefined) { t === 'C' ? nextVerb(true) : nextCard(t, true); } else { buildDeck(t); renderTable(t); } }
-        } 
+        showToast("Posticipato di 30 giorni!");
+        if (t === 'C') nextVerb(); else nextCard(t);
+        renderTable(t);
     }
 
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && document.getElementById('editModal').style.display !== 'flex') {
-            if (e.target.classList.contains('add-input') || e.target.classList.contains('search-input')) return;
-            e.preventDefault();
-            const active = document.querySelector('.db-section.active');
-            if (active) { const tid = active.id.replace('section', ''); tid === 'C' ? checkVerb() : checkGeneric(tid); }
-        }
-    });
+    function manualDelete(t) {
+        const item = dbs[t].current;
+        if (!item || !confirm("Eliminare questa carta?")) return;
+        dbs[t].data = dbs[t].data.filter(w => w !== item);
+        save(t);
+        if (t === 'C') nextVerb(); else nextCard(t);
+        renderTable(t);
+        showToast("Eliminato!");
+    }
 
-    async function addNewItem(t) {
+    function addNewItem(t) {
         if (t === 'C') {
             const base = document.getElementById('newBaseC').value.trim(), full = document.getElementById('newFullC').value.trim(), it = document.getElementById('newItC').value.trim();
-            if(!base || !full || !it) return; 
-            const newItem = { base, full, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
+            if (!base || !full || !it) return;
+            const newItem = { id: generateId(), base, full, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
             dbs.C.data.push(newItem); save('C'); dbs.C.deck.push(newItem); renderTable('C');
             document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = "";
         } else {
             const en = document.getElementById('newEn' + t).value.trim(), it = document.getElementById('newIt' + t).value.trim();
-            if(!en || !it) return; 
-            const newItem = { en, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
+            if (!en || !it) return;
+            const newItem = { id: generateId(), en, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
             dbs[t].data.push(newItem); save(t); dbs[t].deck.push(newItem); renderTable(t);
             document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = ""; if (isIPhone) handleIPhoneBtn(t);
         }
         showToast("Aggiunto!");
     }
 
-    function exportData() {
-        const allData = { A: dbs.A.data, D: dbs.D.data, B: dbs.B.data, C: dbs.C.data }, blob = new Blob([JSON.stringify(allData)], { type: 'application/json' }), a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = `backup_flashcards_${new Date().toISOString().slice(0,10)}.json`; a.click();
+    function postponeAll(t) {
+        if(!confirm("Posticipare TUTTI gli elementi di questa lista per 30 giorni?")) return;
+        const wait = Date.now() + (30 * 24 * 60 * 60 * 1000);
+        dbs[t].data.forEach(w => w.nextReview = wait);
+        save(t); buildDeck(t); dbs[t].current = null;
+        if(t === 'C') nextVerb(); else nextCard(t);
+        renderTable(t); showToast("Tutti posticipati!");
     }
 
-    // NUOVA FUNZIONE DI SINCRONIZZAZIONE INTELLIGENTE (MERGE)
+    function reactivateAll(t) {
+        dbs[t].data.forEach(w => w.nextReview = 0);
+        save(t); buildDeck(t);
+        if(t === 'C') nextVerb(true); else nextCard(t, true);
+        renderTable(t); showToast("Tutti riattivati!");
+    }
+
+    function refreshList(t) { buildDeck(t); renderTable(t); showToast("Lista aggiornata!"); }
+
+    function renderTable(t) {
+        const table = document.getElementById('table' + t), query = document.getElementById('search' + t).value.toLowerCase();
+        table.innerHTML = `<tr><th class="col-idx">#</th><th class="col-main">${t==='C'?'Paradigma':'Inglese'}</th><th class="col-trans">Traduzione</th><th>Azioni</th></tr>`;
+        dbs[t].data.forEach((w, i) => {
+            if (t === 'C') {
+                if (!w.base.toLowerCase().includes(query) && !w.full.toLowerCase().includes(query) && !w.it.toLowerCase().includes(query)) return;
+            } else {
+                if (!w.en.toLowerCase().includes(query) && !w.it.toLowerCase().includes(query)) return;
+            }
+            const isPaused = w.nextReview > Date.now();
+            const row = table.insertRow();
+            if (dbs[t].current === w) row.classList.add('list-active-highlight');
+            
+            const cellMain = row.insertCell();
+            cellMain.className = "col-main";
+            cellMain.innerText = t==='C' ? w.full.toUpperCase() : w.en.toUpperCase();
+            cellMain.onclick = () => toggleListPause(t, i);
+
+            const cellTrans = row.insertCell();
+            cellTrans.className = "col-trans";
+            cellTrans.innerHTML = `<span class="hidden-text" onclick="event.stopPropagation(); this.style.filter='none'">${w.it.toUpperCase()}</span>`;
+            cellTrans.onclick = () => toggleListPause(t, i);
+
+            row.insertCell(0).innerText = i+1;
+            
+            const cellActions = row.insertCell();
+            cellActions.innerHTML = `
+                <div style="display:flex; gap:5px; justify-content:center;">
+                    <button class="list-btn btn-edit-list" onclick="manualEdit('${t}', ${i})">✏️</button>
+                    <button class="list-btn ${isPaused ? 'btn-reactivate-list' : 'btn-postpone-list'}" onclick="toggleListPause('${t}', ${i})">${isPaused ? '⚡' : '⏳'}</button>
+                    <button class="list-btn btn-trash-list" onclick="deleteListIdx('${t}', ${i})">🗑️</button>
+                </div>`;
+        });
+    }
+
+    function toggleListPause(t, i) {
+        const w = dbs[t].data[i];
+        w.nextReview = (w.nextReview > Date.now()) ? 0 : Date.now() + (30 * 24 * 60 * 60 * 1000);
+        save(t); buildDeck(t); renderTable(t);
+        showToast(w.nextReview > 0 ? "Posticipato (30gg)" : "Riattivato");
+    }
+
+    function deleteListIdx(t, i) {
+        if (!confirm("Eliminare?")) return;
+        dbs[t].data.splice(i, 1);
+        save(t); buildDeck(t); renderTable(t);
+    }
+
+    function exportData() {
+        const allData = { A: dbs.A.data, D: dbs.D.data, B: dbs.B.data, C: dbs.C.data };
+        const blob = new Blob([JSON.stringify(allData)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `backup_flashcards_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+    }
+
     function importData(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -630,26 +639,37 @@
         reader.onload = function(e) {
             try {
                 const imported = JSON.parse(e.target.result);
+                let updatedCount = 0;
                 let addedCount = 0;
 
                 ['A', 'D', 'B', 'C'].forEach(t => {
                     if (imported[t]) {
                         imported[t].forEach(newItem => {
-                            // Verifica se l'elemento esiste già nel database locale
-                            let exists = false;
-                            if (t === 'C') {
-                                exists = dbs[t].data.some(localItem => 
-                                    localItem.base.toLowerCase() === newItem.base.toLowerCase() &&
-                                    localItem.full.toLowerCase() === newItem.full.toLowerCase()
-                                );
-                            } else {
-                                exists = dbs[t].data.some(localItem => 
-                                    localItem.en.toLowerCase() === newItem.en.toLowerCase()
-                                );
+                            // CERCA SE L'ELEMENTO ESISTE GIÀ TRAMITE ID
+                            let existingItem = null;
+                            if (newItem.id) {
+                                existingItem = dbs[t].data.find(item => item.id === newItem.id);
                             }
 
-                            // Se non esiste, lo aggiungiamo
-                            if (!exists) {
+                            if (existingItem) {
+                                // SE ESISTE, AGGIORNA SOLO I TESTI (SE SONO DIVERSI)
+                                if (t === 'C') {
+                                    if (existingItem.base !== newItem.base || existingItem.full !== newItem.full || existingItem.it !== newItem.it) {
+                                        existingItem.base = newItem.base;
+                                        existingItem.full = newItem.full;
+                                        existingItem.it = newItem.it;
+                                        updatedCount++;
+                                    }
+                                } else {
+                                    if (existingItem.en !== newItem.en || existingItem.it !== newItem.it) {
+                                        existingItem.en = newItem.en;
+                                        existingItem.it = newItem.it;
+                                        updatedCount++;
+                                    }
+                                }
+                            } else {
+                                // SE NON ESISTE, AGGIUNGI COME NUOVO (assicurandoti che abbia un ID)
+                                if(!newItem.id) newItem.id = generateId();
                                 dbs[t].data.push(newItem);
                                 addedCount++;
                             }
@@ -657,19 +677,14 @@
                         save(t);
                     }
                 });
-
-                if (addedCount > 0) {
-                    alert(`Sincronizzazione completata! Aggiunti ${addedCount} nuovi elementi.`);
-                } else {
-                    alert("Sincronizzazione completata: non c'erano nuovi elementi da aggiungere.");
-                }
-                location.reload();
-            } catch(err) { 
-                alert("Errore nel caricamento del file. Assicurati che sia un file di backup valido."); 
-            }
+                
+                alert(`Sincronizzazione completata!\nAggiornati: ${updatedCount}\nAggiunti: ${addedCount}`);
+                init();
+            } catch (err) { alert("Errore nel file!"); }
         };
         reader.readAsText(file);
     }
+
     window.onload = init;
 </script>
 </body>
