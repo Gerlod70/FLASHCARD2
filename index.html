@@ -3,53 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flashcards Pro - V51.9.7 (Sync Mode)</title>
+    <title>Flashcards Pro - V51.9.8 (Full Smart Sync)</title>
     <style>
         :root { --blue: #007bff; --purple: #6f42c1; --dark-blue: #2c3e50; --bg: #f4f7f9; --text-dark: #2d3436; --deep-blue: #0984e3; --light-gray: #f1f2f6; --red: #e74c3c; --green: #27ae60; --orange: #f39c12; --teal: #00cec9; --grey: #636e72; --pink: #d63031; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 80px; color: var(--text-dark); overflow-x: hidden; width: 100vw; }
         button, .nav-btn, .list-btn { transition: transform 0.1s ease, opacity 0.1s ease; outline: none; cursor: pointer; border: none; }
         button:active, .nav-btn:active, .list-btn:active { transform: scale(0.92); opacity: 0.7; }
+        
+        /* NAVIGAZIONE */
         .main-nav { background: #2c3e50; width: 100%; display: flex; justify-content: center; padding: 12px 0; gap: 15px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-wrap: wrap; }
         .nav-btn { padding: 10px 20px; border-radius: 6px; font-weight: bold; color: white; background: #455a64; font-size: 14px; }
         .nav-btn.active-a { background: var(--blue); }
         .nav-btn.active-d { background: var(--pink); }
         .nav-btn.active-b { background: var(--purple); }
         .nav-btn.active-c { background: var(--dark-blue); border: 1px solid white; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 10px; }
-        .card-mode-selector { padding: 5px 10px; border-radius: 8px; border: 1px solid #ddd; background: #f8f9fa; font-size: 13px; font-weight: bold; color: var(--text-dark); outline: none; }
+
+        /* CARD GIOCO */
         .card { background: white; width: 100%; max-width: 1000px; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-bottom: 25px; border-top: 8px solid #ddd; box-sizing: border-box; }
         #sectionA .card { border-color: var(--blue); }
         #sectionD .card { border-color: var(--pink); }
         #sectionB .card { border-color: var(--purple); }
         #sectionC .card { border-color: var(--dark-blue); }
+
         .word-display { font-size: 34px; font-weight: 800; margin: 25px auto; display: flex; align-items: center; justify-content: flex-start; gap: 15px; min-height: 60px; color: #1a1a1a; word-break: break-word; width: 85%; max-width: 850px; text-align: left; }
+        
         .input-group { display: flex; width: 85%; max-width: 850px; margin: 0 auto 10px auto; gap: 10px; }
         .game-input { flex: 1; padding: 18px; border: 2px solid #b2bec3; border-radius: 10px; font-size: 22px; text-align: center; outline: none; box-sizing: border-box; }
-        .btn-check { width: 180px; padding: 0 15px; border-radius: 10px; font-weight: bold; color: white; background: #2d3436; font-size: 16px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .feedback-area { margin: 0 auto 20px auto; width: 85%; max-width: 850px; font-weight: 900; font-size: 26px; min-height: 45px; color: var(--deep-blue); line-height: 1.4; white-space: pre-line; text-align: left; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .modal-field textarea { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 8px; font-size: 18px; font-family: inherit; resize: vertical; min-height: 80px; box-sizing: border-box; }
+        .btn-check { width: 180px; padding: 0 15px; border-radius: 10px; font-weight: bold; color: white; background: #2d3436; font-size: 16px; text-transform: uppercase; cursor: pointer; }
+        
+        .feedback-area { margin: 0 auto 20px auto; width: 85%; max-width: 850px; font-weight: 900; font-size: 26px; min-height: 45px; text-align: left; white-space: pre-line; }
+        
         .game-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 85%; max-width: 850px; margin: 0 auto; }
         .btn-act { padding: 14px; border-radius: 8px; color: white; font-weight: bold; font-size: 14px; text-transform: uppercase; }
         .btn-edit { background: #636e72; }
         .btn-postpone { background: var(--orange); }
         .btn-delete { background: var(--red); }
+
+        /* AGGIUNTA E LISTA */
         .db-section { display: none; width: 100%; flex-direction: column; align-items: center; padding: 20px 0; }
         .db-section.active { display: flex; }
-        .add-container { width: 100%; max-width: 1200px; background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eee; box-sizing: border-box;}
-        .search-container { width: 100%; max-width: 1200px; margin-bottom: 15px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; box-sizing: border-box; padding: 0 5px; }
-        .admin-panel { background: white; width: 100%; max-width: 1200px; border-radius: 15px; border: 1px solid #dfe6e9; margin-bottom: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); box-sizing: border-box; }
-        .scroll-area { max-height: 1000px; overflow-y: auto; overflow-x: auto; position: relative; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; min-width: 1000px; border-collapse: collapse; table-layout: fixed; }
-        th { background: #2d3436; padding: 15px 5px; font-size: 11px; color: white; text-transform: uppercase; text-align: center; position: sticky; top: 0; z-index: 10; }
-        td { padding: 12px 4px; border-bottom: 1px solid #eee; text-align: center; font-size: 14px; vertical-align: middle; }
-        .col-main { width: 230px; text-align: left !important; padding-left: 20px !important; font-weight: 700; word-break: break-word; }
-        .col-trans { width: 400px; text-align: left !important; }
-        .hidden-text { background: var(--light-gray); color: var(--deep-blue); padding: 8px 12px; border-radius: 6px; cursor: pointer; display: block; width: 95%; border: 1px solid #dcdde1; box-sizing: border-box; filter: blur(4px); transition: filter 0.2s; }
-        tr:hover .hidden-text { filter: blur(0); background: var(--deep-blue); color: white !important; font-weight: bold; }
-        .backup-footer { width: 100%; max-width: 1200px; display: flex; justify-content: center; gap: 20px; margin-top: 20px; padding: 20px; border-top: 2px dashed #ccc; box-sizing: border-box; }
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: bold; }
+        
+        .add-container { width: 100%; max-width: 1200px; background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); box-sizing: border-box;}
+        .admin-panel { background: white; width: 100%; max-width: 1200px; border-radius: 15px; border: 1px solid #dfe6e9; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .scroll-area { max-height: 800px; overflow-y: auto; overflow-x: auto; }
+        
+        table { width: 100%; min-width: 900px; border-collapse: collapse; }
+        th { background: #2d3436; padding: 15px; color: white; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
+        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
+        
+        .row-paused { background-color: #ffeaa7 !important; }
+        .hidden-text { background: var(--light-gray); color: var(--deep-blue); padding: 8px 12px; border-radius: 6px; cursor: pointer; display: block; filter: blur(4px); transition: filter 0.2s; }
+        .hidden-text.visible { filter: blur(0); background: #f1f2f6; }
+
+        /* MODALE */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; }
+        
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 4000; left: 50%; bottom: 30px; transform: translateX(-50%); }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity:0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
@@ -57,290 +67,447 @@
 </head>
 <body>
 
-    <div id="toast">Operazione completata!</div>
+<div id="toast">Operazione completata!</div>
 
-    <div id="editModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 id="modalTitle">Modifica Elemento</h3>
-            <div id="fieldsA" style="display:none">
-                <div style="margin-bottom:15px"><label>Inglese:</label><textarea id="editEn"></textarea></div>
-                <div style="margin-bottom:15px"><label>Italiano:</label><textarea id="editIt"></textarea></div>
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 id="modalTitle">Modifica Flashcard</h3>
+        <div id="fieldsStandard">
+            <div style="margin-bottom:15px">
+                <label>Inglese:</label><br>
+                <textarea id="editEn" style="width:100%; height:60px; padding:10px; border-radius:8px; border:1px solid #ddd;"></textarea>
             </div>
-            <div id="fieldsC" style="display:none">
-                <div style="margin-bottom:15px"><label>Base:</label><textarea id="editBaseC"></textarea></div>
-                <div style="margin-bottom:15px"><label>Paradigma:</label><textarea id="editFullC"></textarea></div>
-                <div style="margin-bottom:15px"><label>Traduzione:</label><textarea id="editItC"></textarea></div>
+            <div style="margin-bottom:15px">
+                <label>Italiano:</label><br>
+                <textarea id="editIt" style="width:100%; height:60px; padding:10px; border-radius:8px; border:1px solid #ddd;"></textarea>
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:10px">
-                <button onclick="closeModal()" style="background:var(--grey); color:white; padding:10px 20px; border-radius:8px">Annulla</button>
-                <button onclick="saveModal()" style="background:var(--green); color:white; padding:10px 20px; border-radius:8px">Salva</button>
-            </div>
+        </div>
+        <div id="fieldsVerbi" style="display:none">
+            <div style="margin-bottom:10px"><label>Base:</label><br><input type="text" id="editBaseC" style="width:100%; padding:8px;"></div>
+            <div style="margin-bottom:10px"><label>Paradigma:</label><br><input type="text" id="editFullC" style="width:100%; padding:8px;"></div>
+            <div style="margin-bottom:10px"><label>Traduzione:</label><br><input type="text" id="editItC" style="width:100%; padding:8px;"></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px">
+            <button onclick="closeModal()" style="background:var(--grey); color:white; padding:10px 20px; border-radius:8px">Annulla</button>
+            <button onclick="saveModal()" style="background:var(--green); color:white; padding:10px 20px; border-radius:8px">Salva</button>
         </div>
     </div>
+</div>
 
-    <nav class="main-nav">
-        <button id="navA" class="nav-btn active-a" onclick="switchTab('A')">Database 1</button>
-        <button id="navD" class="nav-btn" onclick="switchTab('D')">Database 2</button>
-        <button id="navB" class="nav-btn" onclick="switchTab('B')">Lesson and Grammar</button>
-        <button id="navC" class="nav-btn" onclick="switchTab('C')">Verbi Irregolari</button>
-    </nav>
+<nav class="main-nav">
+    <button id="navA" class="nav-btn active-a" onclick="switchTab('A')">DATABASE 1</button>
+    <button id="navD" class="nav-btn" onclick="switchTab('D')">DATABASE 2</button>
+    <button id="navB" class="nav-btn" onclick="switchTab('B')">LESSON</button>
+    <button id="navC" class="nav-btn" onclick="switchTab('C')">VERBI</button>
+</nav>
 
-    <section id="sectionA" class="db-section active">
-        <div class="card">
-            <div class="card-header">
-                <div id="infoA" style="font-size:14px; font-weight:bold; color:var(--blue);"></div>
-                <select id="gameModeA" class="card-mode-selector" onchange="syncFromGame('A')">
-                    <option value="en">Solo Eng</option><option value="it">Solo Ita</option><option value="alt" selected>Modalità Alt</option>
-                </select>
-            </div>
-            <div class="word-display"><span id="displayA">...</span><button onclick="speakItem(dbs.A.current.en)" style="background:none; font-size:30px;">🔊</button></div>
-            <div id="gameA">
-                <div class="input-group">
-                    <input type="text" id="ansA" class="game-input" placeholder="Traduci..." autocomplete="off">
-                    <button id="checkA" class="btn-check" onclick="checkGeneric('A')">CONTROLLA</button>
-                </div>
-                <div id="fbA" class="feedback-area"></div>
-                <div class="game-controls">
-                    <button class="btn-act btn-edit" onclick="manualEdit('A')">Modifica</button>
-                    <button class="btn-act btn-postpone" onclick="togglePause('A')">Posticipa</button>
-                    <button class="btn-act btn-delete" onclick="manualDelete('A')">Elimina</button>
-                </div>
-            </div>
-            <button id="restartA" style="display:none; background:var(--green); color:white; padding:15px; border-radius:10px; font-weight:bold; margin-top:20px" onclick="restartSession('A')">RICOMINCIA SESSIONE 🔄</button>
-        </div>
-        <div class="add-container">
-            <input type="text" id="newEnA" class="add-input" placeholder="Parola Inglese" oninput="handleIPhoneBtn('A')" onkeydown="handlePcTranslate(event, 'A', 'en')" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd">
-            <input type="text" id="newItA" class="add-input" placeholder="Traduzione Italiana" oninput="handleIPhoneBtn('A')" onkeydown="handlePcTranslate(event, 'A', 'it')" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd">
-            <button id="btnAddA" class="btn-add" onclick="smartAdd('A')" style="background:var(--green); color:white; padding:10px 20px; border-radius:6px; font-weight:bold">AGGIUNGI +</button>
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchA" class="search-input" placeholder="Cerca..." oninput="renderTable('A')" style="padding:10px; border-radius:8px; border:1px solid #ddd; flex:1">
-            <button onclick="forceAltRotation('A')" style="background:var(--blue); color:white; padding:10px; border-radius:8px; font-weight:bold">RUOTA ALT 🔄</button>
-        </div>
-        <div class="admin-panel"><div class="scroll-area"><table id="tableA"></table></div></div>
-    </section>
+<div id="sections-container"></div>
 
-    <section id="sectionD" class="db-section">
-        <div class="card">
-            <div class="card-header">
-                <div id="infoD" style="font-size:14px; font-weight:bold; color:var(--pink);"></div>
-                <select id="gameModeD" class="card-mode-selector" onchange="syncFromGame('D')">
-                    <option value="en">Solo Eng</option><option value="it">Solo Ita</option><option value="alt" selected>Modalità Alt</option>
-                </select>
-            </div>
-            <div class="word-display"><span id="displayD">...</span><button onclick="speakItem(dbs.D.current.en)" style="background:none; font-size:30px;">🔊</button></div>
-            <div id="gameD">
-                <div class="input-group">
-                    <input type="text" id="ansD" class="game-input" placeholder="Traduci..." autocomplete="off">
-                    <button id="checkD" class="btn-check" onclick="checkGeneric('D')" style="background:var(--pink)">CONTROLLA</button>
-                </div>
-                <div id="fbD" class="feedback-area"></div>
-                <div class="game-controls">
-                    <button class="btn-act btn-edit" onclick="manualEdit('D')">Modifica</button>
-                    <button class="btn-act btn-postpone" onclick="togglePause('D')">Posticipa</button>
-                    <button class="btn-act btn-delete" onclick="manualDelete('D')">Elimina</button>
-                </div>
-            </div>
-            <button id="restartD" style="display:none; background:var(--green); color:white; padding:15px; border-radius:10px; font-weight:bold; margin-top:20px" onclick="restartSession('D')">RICOMINCIA SESSIONE 🔄</button>
-        </div>
-        <div class="add-container">
-            <input type="text" id="newEnD" class="add-input" placeholder="Parola Inglese" oninput="handleIPhoneBtn('D')" onkeydown="handlePcTranslate(event, 'D', 'en')" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd">
-            <input type="text" id="newItD" class="add-input" placeholder="Traduzione Italiana" oninput="handleIPhoneBtn('D')" onkeydown="handlePcTranslate(event, 'D', 'it')" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd">
-            <button id="btnAddD" class="btn-add" onclick="smartAdd('D')" style="background:var(--pink); color:white; padding:10px 20px; border-radius:6px; font-weight:bold">AGGIUNGI +</button>
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchD" class="search-input" placeholder="Cerca..." oninput="renderTable('D')" style="padding:10px; border-radius:8px; border:1px solid #ddd; flex:1">
-            <button onclick="forceAltRotation('D')" style="background:var(--pink); color:white; padding:10px; border-radius:8px; font-weight:bold">RUOTA ALT 🔄</button>
-        </div>
-        <div class="admin-panel"><div class="scroll-area"><table id="tableD"></table></div></div>
-    </section>
-
-    <section id="sectionB" class="db-section">
-        <div class="card">
-            <div class="card-header">
-                <div id="infoB" style="font-size:14px; font-weight:bold; color:var(--purple);"></div>
-                <select id="gameModeB" class="card-mode-selector" onchange="syncFromGame('B')">
-                    <option value="en">Solo Eng</option><option value="it">Solo Ita</option><option value="alt" selected>Modalità Alt</option>
-                </select>
-            </div>
-            <div class="word-display"><span id="displayB">...</span><button onclick="speakItem(dbs.B.current.en)" style="background:none; font-size:30px;">🔊</button></div>
-            <div id="gameB">
-                <div class="input-group">
-                    <input type="text" id="ansB" class="game-input" placeholder="Testo Inglese..." autocomplete="off">
-                    <button id="checkB" class="btn-check" onclick="checkGeneric('B')" style="background:var(--purple)">CONTROLLA</button>
-                </div>
-                <div id="fbB" class="feedback-area"></div>
-                <div class="game-controls">
-                    <button class="btn-act btn-edit" onclick="manualEdit('B')">Modifica</button>
-                    <button class="btn-act btn-postpone" onclick="togglePause('B')">Posticipa</button>
-                    <button class="btn-act btn-delete" onclick="manualDelete('B')">Elimina</button>
-                </div>
-            </div>
-            <button id="restartB" style="display:none; background:var(--green); color:white; padding:15px; border-radius:10px; font-weight:bold; margin-top:20px" onclick="restartSession('B')">RICOMINCIA SESSIONE 🔄</button>
-        </div>
-        <div class="add-container">
-            <input type="text" id="newEnB" class="add-input" placeholder="Testo Inglese" oninput="handleIPhoneBtn('B')" onkeydown="handlePcTranslate(event, 'B', 'en')" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd">
-            <input type="text" id="newItB" class="add-input" placeholder="Traduzione Italiana" oninput="handleIPhoneBtn('B')" onkeydown="handlePcTranslate(event, 'B', 'it')" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd">
-            <button id="btnAddB" class="btn-add" onclick="smartAdd('B')" style="background:var(--purple); color:white; padding:10px 20px; border-radius:6px; font-weight:bold">AGGIUNGI +</button>
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchB" class="search-input" placeholder="Cerca..." oninput="renderTable('B')" style="padding:10px; border-radius:8px; border:1px solid #ddd; flex:1">
-            <button onclick="forceAltRotation('B')" style="background:var(--purple); color:white; padding:10px; border-radius:8px; font-weight:bold">RUOTA ALT 🔄</button>
-        </div>
-        <div class="admin-panel"><div class="scroll-area"><table id="tableB"></table></div></div>
-    </section>
-
-    <section id="sectionC" class="db-section">
-        <div class="card">
-            <div class="card-header">
-                <div id="infoC" style="font-weight: bold; color: #7f8c8d;"></div>
-                <select id="gameModeC" class="card-mode-selector" onchange="syncFromGame('C')">
-                    <option value="en">Eng -> Ita</option><option value="it">Ita -> Eng</option><option value="alt" selected>Modalità Alt</option>
-                </select>
-            </div>
-            <div class="word-display"><span id="displayC">...</span><button onclick="speakItem(dbs.C.current.full)" style="background:none; font-size:30px;">🔊</button></div>
-            <div id="gameC">
-                <div class="input-group">
-                    <input type="text" id="ansC" class="game-input" placeholder="Paradigma o Traduzione..." autocomplete="off">
-                    <button id="checkC" class="btn-check" onclick="checkVerb()" style="background:var(--dark-blue)">CONTROLLA</button>
-                </div>
-                <div id="fbC" class="feedback-area"></div>
-                <div class="game-controls">
-                    <button class="btn-act btn-edit" onclick="manualEdit('C')">Modifica</button>
-                    <button class="btn-act btn-postpone" onclick="togglePause('C')">Posticipa</button>
-                    <button class="btn-act btn-delete" onclick="manualDelete('C')">Elimina</button>
-                </div>
-            </div>
-            <button id="restartC" style="display:none; background:var(--green); color:white; padding:15px; border-radius:10px; font-weight:bold; margin-top:20px" onclick="restartSession('C')">RICOMINCIA SESSIONE 🔄</button>
-        </div>
-        <div class="add-container">
-            <input type="text" id="newBaseC" class="add-input" placeholder="Base" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd">
-            <input type="text" id="newFullC" class="add-input" placeholder="Paradigma" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd">
-            <input type="text" id="newItC" class="add-input" placeholder="Traduzione" style="flex:1; padding:10px; border-radius:6px; border:1px solid #ddd">
-            <button class="btn-add" onclick="addNewItem('C')" style="background:var(--dark-blue); color:white; padding:10px 20px; border-radius:6px; font-weight:bold">AGGIUNGI +</button>
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchC" class="search-input" placeholder="Cerca..." oninput="renderTable('C')" style="padding:10px; border-radius:8px; border:1px solid #ddd; flex:1">
-            <button onclick="forceAltRotation('C')" style="background:var(--dark-blue); color:white; padding:10px; border-radius:8px; font-weight:bold">RUOTA ALT 🔄</button>
-        </div>
-        <div class="admin-panel"><div class="scroll-area"><table id="tableC"></table></div></div>
-    </section>
-
-    <div class="backup-footer">
-        <button onclick="exportData()" style="background:#2d3436; color:white; padding:15px 25px; border-radius:10px; font-weight:bold">💾 ESPORTA BACKUP</button>
-        <button onclick="document.getElementById('importFile').click()" style="background:#636e72; color:white; padding:15px 25px; border-radius:10px; font-weight:bold">📂 IMPORTA BACKUP</button>
-        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
-    </div>
+<div style="margin: 30px 0; display:flex; gap:20px; flex-wrap: wrap; justify-content: center;">
+    <button onclick="exportData()" style="background:#2d3436; color:white; padding:15px 25px; border-radius:10px; font-weight:bold">💾 ESPORTA BACKUP</button>
+    <button onclick="document.getElementById('importFile').click()" style="background:#636e72; color:white; padding:15px 25px; border-radius:10px; font-weight:bold">📂 IMPORTA BACKUP (SMART MERGE)</button>
+    <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+</div>
 
 <script>
     const isIPhone = /iPhone|iPod|iPad/i.test(navigator.userAgent);
-    const APP_PREFIX = 'GITHUB_PROJECT_1';
+    const APP_PREFIX = 'FLASH_V51_9_8_';
+    let currentTab = 'A';
     let dbs = {
-        A: { key: APP_PREFIX + '_DATABASE_A', data: [], deck: [], current: null },
-        D: { key: APP_PREFIX + '_DATABASE_D', data: [], deck: [], current: null },
-        B: { key: APP_PREFIX + '_DATABASE_B', data: [], deck: [], current: null },
-        C: { key: APP_PREFIX + '_VERBI_PRO', data: [], deck: [], current: null }
+        A: { key: APP_PREFIX + 'DB_A', data: [], deck: [], current: null },
+        D: { key: APP_PREFIX + 'DB_D', data: [], deck: [], current: null },
+        B: { key: APP_PREFIX + 'DB_B', data: [], deck: [], current: null },
+        C: { key: APP_PREFIX + 'DB_C', data: [], deck: [], current: null }
     };
-    let currentEditState = { t: null, i: null };
 
     function generateId() { return Date.now() + Math.random().toString(36).substr(2, 9); }
 
     function init() {
+        const container = document.getElementById('sections-container');
         ['A', 'D', 'B', 'C'].forEach(t => {
+            const section = document.createElement('section');
+            section.id = 'section' + t;
+            section.className = 'db-section' + (t === 'A' ? ' active' : '');
+            
+            section.innerHTML = `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+                        <div id="info${t}" style="font-weight:bold; color:var(--grey)">Caricamento...</div>
+                        <select id="mode${t}" onchange="changeGameMode('${t}')" style="padding:5px; border-radius:5px;">
+                            <option value="en">Solo Eng</option>
+                            <option value="it">Solo Ita</option>
+                            <option value="alt" selected>Modalità Alt</option>
+                        </select>
+                    </div>
+                    <div class="word-display">
+                        <span id="display${t}">...</span>
+                        <button onclick="speakText('${t}')" style="background:none; font-size:30px;">🔊</button>
+                    </div>
+                    <div id="gameArea${t}">
+                        <div class="input-group">
+                            <input type="text" id="ans${t}" class="game-input" placeholder="Traduci..." autocomplete="off">
+                            <button class="btn-check" onclick="checkAnswer('${t}')">CONTROLLA</button>
+                        </div>
+                        <div id="fb${t}" class="feedback-area"></div>
+                        <div class="game-controls">
+                            <button class="btn-act btn-edit" onclick="manualEdit('${t}')">Modifica</button>
+                            <button class="btn-act btn-postpone" onclick="togglePause('${t}')">Posticipa</button>
+                            <button class="btn-act btn-delete" onclick="manualDelete('${t}')">Elimina</button>
+                        </div>
+                    </div>
+                    <button id="restart${t}" style="display:none; background:var(--green); color:white; padding:15px; border-radius:10px; width:100%; font-weight:bold; margin-top:20px" onclick="restartSession('${t}')">RICOMINCIA SESSIONE 🔄</button>
+                </div>
+
+                <div class="add-container">
+                    <input type="text" id="newEn${t}" placeholder="${t==='C'?'Base (es. Go)':'Inglese'}" onkeydown="handleNewWordKey(event, '${t}', 'en')" style="flex:1; padding:12px; border-radius:8px; border:1px solid #ddd">
+                    <input type="text" id="newIt${t}" placeholder="${t==='C'?'Traduzione':'Italiano'}" onkeydown="handleNewWordKey(event, '${t}', 'it')" style="flex:1; padding:12px; border-radius:8px; border:1px solid #ddd">
+                    <button id="btnAdd${t}" onclick="smartAdd('${t}')" style="background:var(--green); color:white; padding:10px 20px; border-radius:8px; font-weight:bold">AGGIUNGI</button>
+                </div>
+
+                <div style="width:100%; max-width:1200px; display:flex; gap:10px; margin-bottom:10px">
+                    <input type="text" id="search${t}" placeholder="Cerca parola nella lista..." oninput="renderTable('${t}')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd">
+                    <button onclick="forceRotation('${t}')" style="background:var(--deep-blue); color:white; padding:10px; border-radius:8px; font-weight:bold">RUOTA ALT 🔄</button>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="scroll-area">
+                        <table id="table${t}"></table>
+                    </div>
+                </div>
+            `;
+            container.appendChild(section);
+
+            // Caricamento Dati
             let saved = localStorage.getItem(dbs[t].key);
             dbs[t].data = saved ? JSON.parse(saved) : [];
+            
+            // Migrazione: aggiunta ID univoco se mancante
             dbs[t].data.forEach(item => { if(!item.id) item.id = generateId(); });
             save(t);
+            
             buildDeck(t);
-            if(t === 'C') nextVerb(); else nextCard(t);
+            nextCard(t);
             renderTable(t);
+
+            // Listener Invio per il gioco
+            document.getElementById('ans'+t).addEventListener('keydown', e => {
+                if(e.key === 'Enter') checkAnswer(t);
+            });
         });
     }
 
-    function buildDeck(t) {
-        const now = Date.now();
-        dbs[t].deck = dbs[t].data.filter(w => !w.nextReview || now > w.nextReview).sort(() => Math.random() - 0.5);
-    }
-
     function switchTab(t) {
+        currentTab = t;
         document.querySelectorAll('.db-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-a','active-b','active-c','active-d'));
         document.getElementById('section' + t).classList.add('active');
         document.getElementById('nav'+t).classList.add('active-'+t.toLowerCase());
-        if(t === 'C') nextVerb(true); else nextCard(t, true);
         renderTable(t);
+        document.getElementById('ans'+t).focus();
+    }
+
+    function save(t) { localStorage.setItem(dbs[t].key, JSON.stringify(dbs[t].data)); }
+
+    function buildDeck(t) {
+        dbs[t].deck = dbs[t].data.filter(w => !w.paused).sort(() => Math.random() - 0.5);
     }
 
     function nextCard(t, keepCurrent = false) {
         if (dbs[t].deck.length === 0 && !keepCurrent && !dbs[t].current) {
-            document.getElementById('display' + t).innerText = "FINITA! ✅";
-            document.getElementById('game' + t).style.display = "none";
-            document.getElementById('restart' + t).style.display = "inline-block";
+            document.getElementById('display'+t).innerText = "SESSIONE COMPLETATA! 🎉";
+            document.getElementById('gameArea'+t).style.display = "none";
+            document.getElementById('restart'+t).style.display = "block";
             return;
         }
-        document.getElementById('game' + t).style.display = "block";
-        document.getElementById('restart' + t).style.display = "none";
-        if(!keepCurrent) dbs[t].current = dbs[t].deck.pop();
-        if(!dbs[t].current) return;
+
+        document.getElementById('gameArea'+t).style.display = "block";
+        document.getElementById('restart'+t).style.display = "none";
+
+        if (!keepCurrent) dbs[t].current = dbs[t].deck.pop();
+        const item = dbs[t].current;
+        if (!item) return;
+
+        const mode = item.mode || 'alt';
+        document.getElementById('mode'+t).value = mode;
+
+        let showEn = (mode === 'en') || (mode === 'alt' && item.lastAltState !== 'it');
+        if (mode === 'it') showEn = false;
+
+        if (t === 'C') {
+            document.getElementById('display'+t).innerText = showEn ? item.full : item.it;
+            item._target = showEn ? item.it : item.full;
+        } else {
+            document.getElementById('display'+t).innerText = showEn ? item.en : item.it;
+            item._target = showEn ? item.it : item.en;
+        }
+
+        document.getElementById('fb'+t).innerText = "";
+        document.getElementById('ans'+t).value = "";
+        document.getElementById('ans'+t).focus();
+        document.getElementById('info'+t).innerText = `PAROLE MANCANTI: ${dbs[t].deck.length + 1}`;
+    }
+
+    function checkAnswer(t) {
+        const input = document.getElementById('ans'+t);
+        const ans = input.value.trim().toLowerCase();
+        const item = dbs[t].current;
+        if (!item) return;
+
+        const target = item._target.toLowerCase();
+        const fb = document.getElementById('fb'+t);
+
+        // Controllo speciale per Verbi (Database C)
+        let isCorrect = (ans === target);
+        if (t === 'C' && !isCorrect && item.base) {
+            if (ans === item.base.toLowerCase()) isCorrect = true;
+        }
+
+        if (isCorrect) {
+            fb.innerText = "CORRETTO! 🎉";
+            fb.style.color = "var(--green)";
+            if (item.mode === 'alt') {
+                item.lastAltState = (item.lastAltState === 'it') ? 'en' : 'it';
+            }
+            save(t);
+            setTimeout(() => nextCard(t), 600);
+        } else {
+            fb.innerText = `SBAGLIATO! ❌\nRisposta: ${target.toUpperCase()}`;
+            fb.style.color = "var(--red)";
+        }
+    }
+
+    // --- TRADUTTORE E AGGIUNTA ---
+    async function handleNewWordKey(e, t, field) {
+        const enIn = document.getElementById('newEn' + t);
+        const itIn = document.getElementById('newIt' + t);
         
-        const mode = dbs[t].current.mode || 'alt';
-        document.getElementById('gameMode' + t).value = mode;
-        let showEn = (mode === 'en') || (mode === 'alt' && dbs[t].current.lastAltState !== 'it');
-        if(mode === 'it') showEn = false;
-
-        document.getElementById('display' + t).innerText = showEn ? dbs[t].current.en : dbs[t].current.it;
-        dbs[t].current._target = showEn ? dbs[t].current.it : dbs[t].current.en;
-        document.getElementById('fb' + t).innerText = "";
-        document.getElementById('ans' + t).value = "";
-        document.getElementById('ans' + t).focus();
-        document.getElementById('info' + t).innerText = `MANCANTI: ${dbs[t].deck.length + 1}`;
-    }
-
-    function checkGeneric(t) {
-        const ans = document.getElementById('ans' + t).value.trim().toLowerCase(), target = dbs[t].current._target.toLowerCase();
-        const fb = document.getElementById('fb' + t);
-        if (ans === target) {
-            fb.innerText = "CORRETTO! 🎉"; fb.style.color = "var(--green)";
-            if(dbs[t].current.mode === 'alt') dbs[t].current.lastAltState = (dbs[t].current.lastAltState === 'it') ? 'en' : 'it';
-            setTimeout(() => nextCard(t), 800);
-        } else {
-            fb.innerText = `SBAGLIATO! ❌\nLa risposta era: ${target.toUpperCase()}`; fb.style.color = "var(--red)";
+        if (e.key === 'Enter') {
+            if (enIn.value && !itIn.value) {
+                itIn.value = await translateApi(enIn.value, 'en', 'it');
+            } else if (itIn.value && !enIn.value) {
+                enIn.value = await translateApi(itIn.value, 'it', 'en');
+            } else if (enIn.value && itIn.value) {
+                smartAdd(t);
+            }
         }
+        if(isIPhone) updateIPhoneBtn(t);
     }
 
-    function checkVerb() {
-        const ans = document.getElementById('ansC').value.trim().toLowerCase();
-        const target = dbs.C.current._target.toLowerCase();
-        const base = dbs.C.current.base.toLowerCase();
-        const fb = document.getElementById('fbC');
-        if (ans === target || ans === base) {
-            fb.innerText = "CORRETTO! 🎉"; fb.style.color = "var(--green)";
-            if(dbs.C.current.mode === 'alt') dbs.C.current.lastAltState = (dbs.C.current.lastAltState === 'it') ? 'en' : 'it';
-            setTimeout(() => nextVerb(), 1200);
-        } else {
-            fb.innerText = `SBAGLIATO! ❌\nEra: ${target.toUpperCase()}`; fb.style.color = "var(--red)";
-        }
+    function updateIPhoneBtn(t) {
+        const en = document.getElementById('newEn'+t).value, it = document.getElementById('newIt'+t).value;
+        document.getElementById('btnAdd'+t).innerText = ((en && !it) || (it && !en)) ? "TRADUCI" : "AGGIUNGI";
     }
 
-    // Altre funzioni di supporto ripristinate esattamente come V51.9.7
-    function nextVerb(keepCurrent = false) {
-        if (dbs.C.deck.length === 0 && !keepCurrent && !dbs.C.current) {
-            document.getElementById('displayC').innerText = "FINITA! ✅";
-            document.getElementById('gameC').style.display = "none";
-            document.getElementById('restartC').style.display = "inline-block";
+    async function smartAdd(t) {
+        const enIn = document.getElementById('newEn'+t), itIn = document.getElementById('newIt'+t);
+        const btn = document.getElementById('btnAdd'+t);
+
+        if (isIPhone && btn.innerText === "TRADUCI") {
+            if (enIn.value && !itIn.value) itIn.value = await translateApi(enIn.value, 'en', 'it');
+            else if (itIn.value && !enIn.value) enIn.value = await translateApi(itIn.value, 'it', 'en');
+            updateIPhoneBtn(t);
             return;
         }
-        document.getElementById('gameC').style.display = "block";
-        document.getElementById('restartC').style.display = "none";
-        if(!keepCurrent) dbs.C.current = dbs.C.deck.pop();
-        if(!dbs.C.current) return;
-        const mode = dbs.C.current.mode || 'alt';
-        let showFull = (mode === 'en') || (mode === 'alt' && dbs.C.current.lastAltState !== 'it');
-        if(mode === 'it') showFull = false;
-        document.getElementById('displayC').innerText = showFull ? dbs.C.current.full : dbs.C.current.it;
-        dbs.C.current._target = showFull ? dbs.C.current.it : dbs.C.current.full;
-        document.getElementById('fbC').innerText = ""; document.getElementById('ansC').value = ""; document.getElementById('ansC').focus();
-        document.getElementById('infoC').innerText = `MANCANTI: ${dbs.C.deck.length + 1}`;
+
+        const en = enIn.value.trim(), it = itIn.value.trim();
+        if (!en || !it) return;
+
+        let newItem = { id: generateId(), en, it, paused: false, mode: 'alt', lastAltState: 'en' };
+        if (t === 'C') {
+            newItem.base = en;
+            newItem.full = en; // Default
+        }
+
+        dbs[t].data.push(newItem);
+        save(t);
+        buildDeck(t);
+        renderTable(t);
+        enIn.value = ""; itIn.value = "";
+        if(isIPhone) updateIPhoneBtn(t);
+        showToast("Aggiunto!");
+    }
+
+    async function translateApi(text, sl, tl) {
+        try {
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`);
+            const data = await res.json();
+            return data[0][0][0];
+        } catch { return ""; }
+    }
+
+    // --- LISTA E TABELLA ---
+    function renderTable(t) {
+        const table = document.getElementById('table'+t);
+        const query = document.getElementById('search'+t).value.toLowerCase();
+        table.innerHTML = `<tr><th>#</th><th>${t==='C'?'Paradigma':'Inglese'}</th><th>Traduzione</th><th>Azioni</th></tr>`;
+
+        dbs[t].data.forEach((w, i) => {
+            const searchField = (t === 'C' ? w.full + w.it : w.en + w.it).toLowerCase();
+            if (!searchField.includes(query)) return;
+
+            const row = table.insertRow();
+            if (w.paused) row.classList.add('row-paused');
+            if (dbs[t].current && dbs[t].current.id === w.id) row.style.borderLeft = "8px solid var(--deep-blue)";
+
+            row.insertCell(0).innerText = i + 1;
+            
+            // Cella Lingua Originale + Speaker
+            const cellOrig = row.insertCell(1);
+            cellOrig.innerHTML = `${(t==='C'?w.full:w.en).toUpperCase()} <button onclick="speakRow('${t}', ${i})" style="background:none; cursor:pointer;">🔊</button>`;
+
+            // Cella Traduzione (Clickable per Posticipa)
+            const cellTrad = row.insertCell(2);
+            cellTrad.innerHTML = `<span class="hidden-text" onclick="toggleRowPause('${t}', ${i})">${w.it.toUpperCase()}</span>`;
+
+            // Cella Azioni
+            const cellAct = row.insertCell(3);
+            cellAct.innerHTML = `
+                <button onclick="manualEdit('${t}', ${i})" class="list-btn" style="background:var(--grey); color:white; padding:5px 8px; border-radius:4px; margin-right:5px">✏️</button>
+                <button onclick="togglePause('${t}', ${i})" class="list-btn" style="background:var(--orange); color:white; padding:5px 8px; border-radius:4px; margin-right:5px">⏳</button>
+                <button onclick="deleteRow('${t}', ${i})" class="list-btn" style="background:var(--red); color:white; padding:5px 8px; border-radius:4px">🗑️</button>
+            `;
+        });
+    }
+
+    function toggleRowPause(t, i) {
+        // Toggle visibilità visiva (blur)
+        event.target.classList.toggle('visible');
+        // Toggle stato logico (attiva/posticipata) come richiesto
+        togglePause(t, i);
+    }
+
+    // --- FUNZIONI AZIONE ---
+    function togglePause(t, i) {
+        let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
+        if (!item) return;
+        item.paused = !item.paused;
+        save(t);
+        buildDeck(t);
+        renderTable(t);
+        if (i === undefined) nextCard(t);
+        showToast(item.paused ? "Posticipata" : "Riattivata");
+    }
+
+    function manualEdit(t, i) {
+        let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
+        if (!item) return;
+        window._editing = { t, i };
+        
+        document.getElementById('editModal').style.display = 'flex';
+        if (t === 'C') {
+            document.getElementById('fieldsStandard').style.display = 'none';
+            document.getElementById('fieldsVerbi').style.display = 'block';
+            document.getElementById('editBaseC').value = item.base || "";
+            document.getElementById('editFullC').value = item.full || "";
+            document.getElementById('editItC').value = item.it || "";
+        } else {
+            document.getElementById('fieldsStandard').style.display = 'block';
+            document.getElementById('fieldsVerbi').style.display = 'none';
+            document.getElementById('editEn').value = item.en;
+            document.getElementById('editIt').value = item.it;
+        }
+    }
+
+    function saveModal() {
+        const { t, i } = window._editing;
+        let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
+        
+        if (t === 'C') {
+            item.base = document.getElementById('editBaseC').value.trim();
+            item.full = document.getElementById('editFullC').value.trim();
+            item.it = document.getElementById('editItC').value.trim();
+        } else {
+            item.en = document.getElementById('editEn').value.trim();
+            item.it = document.getElementById('editIt').value.trim();
+        }
+        
+        save(t);
+        renderTable(t);
+        closeModal();
+        if (i === undefined) nextCard(t, true);
+        showToast("Modificato!");
+    }
+
+    function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+    function deleteRow(t, i) {
+        if (confirm("Eliminare questa parola?")) {
+            dbs[t].data.splice(i, 1);
+            save(t);
+            buildDeck(t);
+            renderTable(t);
+            showToast("Eliminata");
+        }
+    }
+
+    function manualDelete(t) {
+        const idx = dbs[t].data.findIndex(w => w.id === dbs[t].current.id);
+        if (idx !== -1) {
+            dbs[t].data.splice(idx, 1);
+            save(t);
+            buildDeck(t);
+            nextCard(t);
+            renderTable(t);
+            showToast("Eliminata");
+        }
+    }
+
+    function changeGameMode(t) {
+        if (dbs[t].current) {
+            dbs[t].current.mode = document.getElementById('mode'+t).value;
+            save(t);
+            nextCard(t, true);
+        }
+    }
+
+    function forceRotation(t) {
+        dbs[t].data.forEach(w => {
+            if (w.mode === 'alt') w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it';
+        });
+        save(t);
+        nextCard(t, true);
+        renderTable(t);
+        showToast("Rotazione completata");
+    }
+
+    function restartSession(t) {
+        buildDeck(t);
+        nextCard(t);
+    }
+
+    function speakText(t) {
+        if (!dbs[t].current) return;
+        const text = (t === 'C') ? dbs[t].current.full : dbs[t].current.en;
+        speak(text);
+    }
+
+    function speakRow(t, i) {
+        const text = (t === 'C') ? dbs[t].data[i].full : dbs[t].data[i].en;
+        speak(text);
+    }
+
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'en-US';
+        window.speechSynthesis.speak(msg);
+    }
+
+    function showToast(m) {
+        const t = document.getElementById("toast");
+        t.innerText = m;
+        t.className = "show";
+        setTimeout(() => t.className = "", 3000);
+    }
+
+    // --- SMART MERGE LOGIC ---
+    function exportData() {
+        const allData = { A: dbs.A.data, D: dbs.D.data, B: dbs.B.data, C: dbs.C.data };
+        const blob = new Blob([JSON.stringify(allData)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `flashcards_backup_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
     }
 
     function importData(event) {
@@ -350,131 +517,64 @@
         reader.onload = function(e) {
             try {
                 const imported = JSON.parse(e.target.result);
-                let addedCount = 0; let updatedCount = 0;
+                let updatedCount = 0;
+                let addedCount = 0;
+
                 ['A', 'D', 'B', 'C'].forEach(t => {
                     if (imported[t]) {
                         imported[t].forEach(newItem => {
-                            let existing = newItem.id ? dbs[t].data.find(x => x.id === newItem.id) : null;
-                            if (existing) {
+                            // Cerca se esiste già una flashcard con lo stesso ID
+                            let existingIndex = dbs[t].data.findIndex(localItem => localItem.id === newItem.id);
+
+                            if (existingIndex !== -1) {
+                                // FLASHCARD ESISTENTE -> Verifica modifiche
+                                let localItem = dbs[t].data[existingIndex];
+                                let hasChanged = false;
+
                                 if (t === 'C') {
-                                    if(existing.base !== newItem.base || existing.full !== newItem.full || existing.it !== newItem.it) {
-                                        existing.base = newItem.base; existing.full = newItem.full; existing.it = newItem.it; updatedCount++;
+                                    if (localItem.base !== newItem.base || localItem.full !== newItem.full || localItem.it !== newItem.it) {
+                                        localItem.base = newItem.base;
+                                        localItem.full = newItem.full;
+                                        localItem.it = newItem.it;
+                                        hasChanged = true;
                                     }
                                 } else {
-                                    if(existing.en !== newItem.en || existing.it !== newItem.it) {
-                                        existing.en = newItem.en; existing.it = newItem.it; updatedCount++;
+                                    if (localItem.en !== newItem.en || localItem.it !== newItem.it) {
+                                        localItem.en = newItem.en;
+                                        localItem.it = newItem.it;
+                                        hasChanged = true;
                                     }
                                 }
+
+                                if (hasChanged) updatedCount++;
                             } else {
-                                if(!newItem.id) newItem.id = generateId();
-                                dbs[t].data.push(newItem); addedCount++;
+                                // NUOVA FLASHCARD (ID non trovato) -> Verifica per testo per sicurezza
+                                let duplicateText = false;
+                                if (t === 'C') {
+                                    duplicateText = dbs[t].data.some(l => l.full.toLowerCase() === newItem.full.toLowerCase());
+                                } else {
+                                    duplicateText = dbs[t].data.some(l => l.en.toLowerCase() === newItem.en.toLowerCase());
+                                }
+
+                                if (!duplicateText) {
+                                    if (!newItem.id) newItem.id = generateId(); // Assicura ID
+                                    dbs[t].data.push(newItem);
+                                    addedCount++;
+                                }
                             }
                         });
                         save(t);
                     }
                 });
-                alert(`Sincronizzazione completata!\nAggiornati: ${updatedCount}\nAggiunti: ${addedCount}`);
+
+                alert(`Sincronizzazione completata!\n- Aggiornate: ${updatedCount}\n- Nuove aggiunte: ${addedCount}`);
                 location.reload();
-            } catch(err) { alert("Errore nel file di backup."); }
+            } catch(err) {
+                alert("Errore nel caricamento del file. Assicurati che sia un backup valido.");
+            }
         };
         reader.readAsText(file);
     }
-
-    // Le restanti funzioni (manualEdit, saveModal, translate, smartAdd, renderTable, etc.) 
-    // sono tutte presenti e allineate alla tua versione originale.
-    function save(t) { localStorage.setItem(dbs[t].key, JSON.stringify(dbs[t].data)); }
-    function speakItem(text) { if(!text) return; window.speechSynthesis.cancel(); const msg = new SpeechSynthesisUtterance(text.replace(/[/\\|()]/g, ' ')); msg.lang = 'en-US'; window.speechSynthesis.speak(msg); }
-    function showToast(msg) { const t = document.getElementById("toast"); t.innerText = msg; t.className = "show"; setTimeout(() => { t.className = ""; }, 3000); }
-    
-    function manualEdit(t, i) {
-        let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
-        if (!item) return;
-        currentEditState = { t, i };
-        document.getElementById('editModal').style.display = 'flex';
-        if (t === 'C') {
-            document.getElementById('fieldsA').style.display = 'none'; document.getElementById('fieldsC').style.display = 'block';
-            document.getElementById('editBaseC').value = item.base; document.getElementById('editFullC').value = item.full; document.getElementById('editItC').value = item.it;
-        } else {
-            document.getElementById('fieldsC').style.display = 'none'; document.getElementById('fieldsA').style.display = 'block';
-            document.getElementById('editEn').value = item.en; document.getElementById('editIt').value = item.it;
-        }
-    }
-
-    function saveModal() {
-        const { t, i } = currentEditState;
-        let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
-        if (t === 'C') {
-            item.base = document.getElementById('editBaseC').value.trim();
-            item.full = document.getElementById('editFullC').value.trim();
-            item.it = document.getElementById('editItC').value.trim();
-            if (i === undefined) nextVerb(true);
-        } else {
-            item.en = document.getElementById('editEn').value.trim();
-            item.it = document.getElementById('editIt').value.trim();
-            if (i === undefined) nextCard(t, true);
-        }
-        save(t); renderTable(t); closeModal(); showToast("Salvato!");
-    }
-
-    function closeModal() { document.getElementById('editModal').style.display = 'none'; }
-
-    async function translateText(text, from, to) {
-        try {
-            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`);
-            const json = await res.json(); return json[0][0][0];
-        } catch (e) { return ""; }
-    }
-
-    async function handlePcTranslate(e, t, lang) {
-        if (isIPhone || e.key !== 'Enter') return;
-        const enIn = document.getElementById('newEn'+t), itIn = document.getElementById('newIt'+t);
-        if (lang === 'en' && enIn.value && !itIn.value) itIn.value = await translateText(enIn.value, 'en', 'it');
-        else if (lang === 'it' && itIn.value && !enIn.value) enIn.value = await translateText(itIn.value, 'it', 'en');
-        else if (enIn.value && itIn.value) addNewItem(t);
-    }
-
-    async function smartAdd(t) {
-        const btn = document.getElementById('btnAdd' + t), enIn = document.getElementById('newEn' + t), itIn = document.getElementById('newIt' + t);
-        if (isIPhone && btn.innerText === "TRADUCI") {
-            if (enIn.value && !itIn.value) itIn.value = await translateText(enIn.value, 'en', 'it');
-            else if (itIn.value && !enIn.value) enIn.value = await translateText(itIn.value, 'it', 'en');
-            handleIPhoneBtn(t);
-        } else { addNewItem(t); }
-    }
-
-    function addNewItem(t) {
-        if (t === 'C') {
-            const b = document.getElementById('newBaseC').value.trim(), f = document.getElementById('newFullC').value.trim(), i = document.getElementById('newItC').value.trim();
-            if (!b || !f || !i) return;
-            dbs.C.data.push({ id: generateId(), base: b, full: f, it: i, nextReview: 0, mode: 'alt', lastAltState: 'en' });
-            save('C'); document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = "";
-        } else {
-            const en = document.getElementById('newEn' + t).value.trim(), it = document.getElementById('newIt' + t).value.trim();
-            if (!en || !it) return;
-            dbs[t].data.push({ id: generateId(), en, it, nextReview: 0, mode: 'alt', lastAltState: 'en' });
-            save(t); document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = "";
-        }
-        buildDeck(t); renderTable(t); showToast("Aggiunto!");
-    }
-
-    function renderTable(t) {
-        const table = document.getElementById('table' + t), query = document.getElementById('search' + t).value.toLowerCase();
-        table.innerHTML = `<tr><th>#</th><th>${t==='C'?'Paradigma':'Inglese'}</th><th>Traduzione</th><th>Azioni</th></tr>`;
-        dbs[t].data.forEach((w, i) => {
-            if (t==='C' ? (!w.full.toLowerCase().includes(query) && !w.it.toLowerCase().includes(query)) : (!w.en.toLowerCase().includes(query) && !w.it.toLowerCase().includes(query))) return;
-            const row = table.insertRow();
-            if (dbs[t].current === w) row.style.background = "#e3f2fd";
-            row.insertCell(0).innerText = i+1;
-            row.insertCell(1).innerText = (t==='C' ? w.full : w.en).toUpperCase();
-            row.insertCell(2).innerHTML = `<span class="hidden-text" onclick="this.style.filter='none'">${w.it.toUpperCase()}</span>`;
-            const act = row.insertCell(3);
-            act.innerHTML = `<button onclick="manualEdit('${t}', ${i})">✏️</button> <button onclick="deleteListIdx('${t}', ${i})">🗑️</button>`;
-        });
-    }
-
-    function deleteListIdx(t, i) { if(confirm("Eliminare?")) { dbs[t].data.splice(i,1); save(t); buildDeck(t); renderTable(t); } }
-    function exportData() { const blob = new Blob([JSON.stringify({A:dbs.A.data, D:dbs.D.data, B:dbs.B.data, C:dbs.C.data})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_flashcards.json`; a.click(); }
-    function handleIPhoneBtn(t) { if(!isIPhone) return; const btn = document.getElementById('btnAdd'+t); const en = document.getElementById('newEn'+t).value, it = document.getElementById('newIt'+t).value; btn.innerText = ((en && !it) || (it && !en)) ? "TRADUCI" : "AGGIUNGI +"; }
 
     window.onload = init;
 </script>
