@@ -297,7 +297,7 @@
     };
     let currentEditState = { t: null, i: null };
 
-    // --- FUNZIONI MODIFICATE PER RISOLVERE IL TUO PROBLEMA ---
+    // FUNZIONI MODIFICATE PER RISOLVERE IL TUO PROBLEMA
     function deleteItem(t, idx) {
         const itemToDelete = dbs[t].data[idx];
         if (confirm("Eliminare l'elemento?")) {
@@ -306,7 +306,6 @@
             save(t);
             renderTable(t);
             showToast("Eliminato");
-            // Se stavi giocando proprio questa parola, passa alla prossima SENZA ricaricare la pagina
             if (isPlayingThisWord) {
                 t === 'C' ? nextVerb(true) : nextCard(t, true);
             }
@@ -319,13 +318,12 @@
         save(t);
         renderTable(t);
         showToast(status ? "Posticipato" : "Riattivato");
-        // Se hai posticipato la parola in corso, passa alla prossima SENZA ricaricare
         if (status && dbs[t].current && dbs[t].current.id === itemToPostpone.id) {
             t === 'C' ? nextVerb(true) : nextCard(t, true);
         }
     }
 
-    // --- RESTO DEL CODICE ORIGINALE INVARIATO ---
+    // LOGICA DI GIOCO E UTILITY (ORIGINALE)
     function manualEdit(t, i) {
         let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
         if (!item) return;
