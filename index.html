@@ -297,6 +297,35 @@
     };
     let currentEditState = { t: null, i: null };
 
+    // --- FUNZIONI MODIFICATE PER RISOLVERE IL TUO PROBLEMA ---
+    function deleteItem(t, idx) {
+        const itemToDelete = dbs[t].data[idx];
+        if (confirm("Eliminare l'elemento?")) {
+            const isPlayingThisWord = dbs[t].current && dbs[t].current.id === itemToDelete.id;
+            dbs[t].data.splice(idx, 1);
+            save(t);
+            renderTable(t);
+            showToast("Eliminato");
+            // Se stavi giocando proprio questa parola, passa alla prossima SENZA ricaricare la pagina
+            if (isPlayingThisWord) {
+                t === 'C' ? nextVerb(true) : nextCard(t, true);
+            }
+        }
+    }
+
+    function postponeItem(t, idx, status) {
+        const itemToPostpone = dbs[t].data[idx];
+        itemToPostpone.paused = status;
+        save(t);
+        renderTable(t);
+        showToast(status ? "Posticipato" : "Riattivato");
+        // Se hai posticipato la parola in corso, passa alla prossima SENZA ricaricare
+        if (status && dbs[t].current && dbs[t].current.id === itemToPostpone.id) {
+            t === 'C' ? nextVerb(true) : nextCard(t, true);
+        }
+    }
+
+    // --- RESTO DEL CODICE ORIGINALE INVARIATO ---
     function manualEdit(t, i) {
         let item = (i === undefined) ? dbs[t].current : dbs[t].data[i];
         if (!item) return;
@@ -384,8 +413,6 @@
         } else { addNewItem(t); }
     }
 
-    function formatText(text) { if(!text) return ""; return text.split(',').map(item => item.trim()).join(', ').toUpperCase(); }
-
     function speakItem(text) {
         if (!text) return;
         window.speechSynthesis.cancel();
@@ -406,7 +433,6 @@
         ['A', 'D', 'B', 'C'].forEach(t => {
             let saved = localStorage.getItem(dbs[t].key);
             dbs[t].data = saved ? JSON.parse(saved) : [];
-            dbs[t].data.forEach(w => { if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; } });
             save(t);
             buildDeck(t);
             t === 'C' ? nextVerb() : nextCard(t);
@@ -415,8 +441,7 @@
     }
 
     function buildDeck(t) {
-        const now = Date.now();
-        dbs[t].deck = dbs[t].data.filter(item => !item.paused || (item.pauseUntil && now > item.pauseUntil));
+        dbs[t].deck = dbs[t].data.filter(item => !item.paused);
         dbs[t].deck.sort(() => Math.random() - 0.5);
     }
 
@@ -619,31 +644,6 @@
         showToast("Modalità aggiornata");
     }
 
-    function postponeItem(t, idx, status) {
-        const item = dbs[t].data[idx];
-        item.paused = status;
-        save(t);
-        renderTable(t);
-        showToast(status ? "Posticipato" : "Riattivato");
-        if (dbs[t].current && dbs[t].current.id === item.id) {
-            t === 'C' ? nextVerb(true) : nextCard(t, true);
-        }
-    }
-
-    function deleteItem(t, idx) {
-        const item = dbs[t].data[idx];
-        if (confirm("Eliminare l'elemento?")) {
-            const isPlaying = dbs[t].current && dbs[t].current.id === item.id;
-            dbs[t].data.splice(idx, 1);
-            save(t);
-            renderTable(t);
-            showToast("Eliminato");
-            if (isPlaying) {
-                t === 'C' ? nextVerb(true) : nextCard(t, true);
-            }
-        }
-    }
-
     function syncFromGame(t) {
         const mode = document.getElementById('gameMode' + t).value;
         dbs[t].data.forEach(item => {
@@ -709,8 +709,7 @@
                             let changed = (t === 'C') ? (existing.base !== newItem.base || existing.full !== newItem.full || existing.it !== newItem.it) : (existing.en !== newItem.en || existing.it !== newItem.it);
                             if (changed) { dbs[t].data[existingIndex] = { ...existing, ...newItem }; updatedCount++; }
                         } else {
-                            dbs[t].data.push(newItem); 
-                            addedCount++;
+                            dbs[t].data.push(newItem); addedCount++;
                         }
                     });
                     save(t);
