@@ -398,17 +398,10 @@
         ['A', 'D', 'B', 'C'].forEach(t => {
             let saved = localStorage.getItem(dbs[t].key);
             dbs[t].data = saved ? JSON.parse(saved) : [];
-            
             dbs[t].data.forEach(w => { 
-                if(w.mode === 'alt') {
-                    w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it';
-                }
+                if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; }
             });
-            save(t); 
-            
-            buildDeck(t); 
-            t === 'C' ? nextVerb() : nextCard(t);
-            renderTable(t);
+            save(t); buildDeck(t); t === 'C' ? nextVerb() : nextCard(t); renderTable(t);
         });
     }
 
@@ -419,16 +412,12 @@
 
     function restartSession(t) {
         dbs[t].data.forEach(w => { 
-            if(w.mode === 'alt') {
-                w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it';
-            }
+            if(w.mode === 'alt') { w.lastAltState = (w.lastAltState === 'it') ? 'en' : 'it'; }
         });
-        save(t); 
-        buildDeck(t); 
-        dbs[t].current = null;
+        save(t); buildDeck(t); dbs[t].current = null;
         if(t === 'C') nextVerb(); else nextCard(t); 
         renderTable(t);
-        showToast("Sessione riavviata e lingue ruotate!");
+        showToast("Sessione riavviata!");
     }
 
     function save(t) { localStorage.setItem(dbs[t].key, JSON.stringify(dbs[t].data)); }
@@ -466,21 +455,14 @@
         }
         document.getElementById('game' + t).style.display = "block";
         document.getElementById('restart' + t).style.display = "none";
-
-        if(!keepCurrent) {
-            dbs[t].current = dbs[t].deck.pop();
-        }
-        
+        if(!keepCurrent) { dbs[t].current = dbs[t].deck.pop(); }
         if(!dbs[t].current) return;
         const mode = dbs[t].current.mode || 'en';
         document.getElementById('gameMode' + t).value = mode;
-        
         let showEn = (mode === 'en') || (mode === 'alt' && dbs[t].current.lastAltState !== 'it');
         if(mode === 'it') showEn = false;
-        
         document.getElementById('display' + t).innerText = showEn ? dbs[t].current.en : dbs[t].current.it;
         dbs[t].current._target = showEn ? dbs[t].current.it : dbs[t].current.en;
-        
         if(!keepCurrent) { document.getElementById('ans' + t).value = ""; document.getElementById('fb' + t).innerText = ""; btn.innerText = "CONTROLLA"; }
         document.getElementById('info' + t).innerText = `RESTANTI: ${dbs[t].deck.length + (dbs[t].current ? 1 : 0)}`;
         if (!isIPhone) document.getElementById('ans' + t).focus();
@@ -502,23 +484,16 @@
         }
         document.getElementById('gameC').style.display = "block";
         document.getElementById('restartC').style.display = "none";
-
-        if(!keepCurrent) {
-            dbs.C.current = dbs.C.deck.pop();
-        }
-
+        if(!keepCurrent) { dbs.C.current = dbs.C.deck.pop(); }
         if(!dbs.C.current) return;
         const mode = dbs.C.current.mode || 'en';
         document.getElementById('gameModeC').value = mode;
-        
         let showEn = (mode === 'en') || (mode === 'alt' && dbs.C.current.lastAltState !== 'it');
         if(mode === 'it') showEn = false;
-        
         document.getElementById('displayC').innerText = showEn ? dbs.C.current.base : dbs.C.current.it;
         document.getElementById('speakBtnC').setAttribute('onclick', `speakItem('${dbs.C.current.full.replace(/'/g, "\\'")}')`);
-        
         if(!keepCurrent) { document.getElementById('ansC').value = ""; document.getElementById('fbC').innerText = ""; btn.innerText = "CONTROLLA"; }
-        document.getElementById('infoC').innerText = `RESTANTI: ${dbs.C.deck.length + (dbs.C.current ? 1 : 0)}`;
+        document.getElementById('info' + t === 'C' ? 'C' : t).innerText = `RESTANTI: ${dbs.C.deck.length + (dbs.C.current ? 1 : 0)}`;
         if (!isIPhone) document.getElementById('ansC').focus();
     }
 
@@ -563,13 +538,9 @@
 
     function refreshList(t) { 
         document.getElementById('search' + t).value = "";
-        if (t === 'C') {
-            document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = "";
-        } else {
-            document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = "";
-        }
-        renderTable(t); 
-        showToast("Campi puliti e lista aggiornata!");
+        if (t === 'C') { document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = ""; } 
+        else { document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = ""; }
+        renderTable(t); showToast("Lista aggiornata!");
     }
 
     function postponeAll(t) { if(confirm("Posticipare TUTTI?")) { const future = Date.now() + 2592000000; dbs[t].data.forEach(w => w.nextReview = future); save(t); buildDeck(t); renderTable(t); t === 'C' ? nextVerb() : nextCard(t); } }
@@ -579,9 +550,7 @@
         let w = (i===undefined)?dbs[t].current:dbs[t].data[i];
         if(!w) return; 
         w.nextReview = (w.nextReview > Date.now()) ? 0 : Date.now() + 2592000000; 
-        save(t);
-        if(i===undefined) { t === 'C' ? nextVerb(true) : nextCard(t, true); } 
-        else { buildDeck(t); renderTable(t); }
+        save(t); if(i===undefined) { t === 'C' ? nextVerb(true) : nextCard(t, true); } else { buildDeck(t); renderTable(t); }
     }
     
     function manualDelete(t, i) { 
@@ -601,16 +570,18 @@
     });
 
     async function addNewItem(t) {
+        let newItem = {};
+        const timestamp = Date.now();
         if (t === 'C') {
             const base = document.getElementById('newBaseC').value.trim(), full = document.getElementById('newFullC').value.trim(), it = document.getElementById('newItC').value.trim();
             if(!base || !full || !it) return; 
-            const newItem = { base, full, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
+            newItem = { id: "C_" + timestamp, base, full, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
             dbs.C.data.push(newItem); save('C'); dbs.C.deck.push(newItem); renderTable('C');
             document.getElementById('newBaseC').value = ""; document.getElementById('newFullC').value = ""; document.getElementById('newItC').value = "";
         } else {
             const en = document.getElementById('newEn' + t).value.trim(), it = document.getElementById('newIt' + t).value.trim();
             if(!en || !it) return; 
-            const newItem = { en, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
+            newItem = { id: t + "_" + timestamp, en, it, nextReview: 0, mode: 'alt', lastAltState: 'en' };
             dbs[t].data.push(newItem); save(t); dbs[t].deck.push(newItem); renderTable(t);
             document.getElementById('newEn' + t).value = ""; document.getElementById('newIt' + t).value = ""; if (isIPhone) handleIPhoneBtn(t);
         }
@@ -618,11 +589,14 @@
     }
 
     function exportData() {
-        const allData = { A: dbs.A.data, D: dbs.D.data, B: dbs.B.data, C: dbs.C.data }, blob = new Blob([JSON.stringify(allData)], { type: 'application/json' }), a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = `backup_flashcards_${new Date().toISOString().slice(0,10)}.json`; a.click();
+        const allData = { A: dbs.A.data, D: dbs.D.data, B: dbs.B.data, C: dbs.C.data };
+        const blob = new Blob([JSON.stringify(allData)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `backup_flashcards_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
     }
 
-    // NUOVA FUNZIONE DI SINCRONIZZAZIONE INTELLIGENTE (MERGE)
     function importData(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -630,43 +604,24 @@
         reader.onload = function(e) {
             try {
                 const imported = JSON.parse(e.target.result);
-                let addedCount = 0;
-
+                let addedCount = 0; let updatedCount = 0;
                 ['A', 'D', 'B', 'C'].forEach(t => {
-                    if (imported[t]) {
-                        imported[t].forEach(newItem => {
-                            // Verifica se l'elemento esiste già nel database locale
-                            let exists = false;
-                            if (t === 'C') {
-                                exists = dbs[t].data.some(localItem => 
-                                    localItem.base.toLowerCase() === newItem.base.toLowerCase() &&
-                                    localItem.full.toLowerCase() === newItem.full.toLowerCase()
-                                );
-                            } else {
-                                exists = dbs[t].data.some(localItem => 
-                                    localItem.en.toLowerCase() === newItem.en.toLowerCase()
-                                );
-                            }
-
-                            // Se non esiste, lo aggiungiamo
-                            if (!exists) {
-                                dbs[t].data.push(newItem);
-                                addedCount++;
-                            }
-                        });
-                        save(t);
-                    }
+                    const importedList = Array.isArray(imported[t]) ? imported[t] : (imported[t]?.data || []);
+                    importedList.forEach(newItem => {
+                        let existingIndex = dbs[t].data.findIndex(item => item.id === newItem.id);
+                        if (existingIndex !== -1) {
+                            let existing = dbs[t].data[existingIndex];
+                            let changed = (t === 'C') ? (existing.base !== newItem.base || existing.full !== newItem.full || existing.it !== newItem.it) : (existing.en !== newItem.en || existing.it !== newItem.it);
+                            if (changed) { dbs[t].data[existingIndex] = { ...existing, ...newItem }; updatedCount++; }
+                        } else {
+                            dbs[t].data.push(newItem); addedCount++;
+                        }
+                    });
+                    save(t);
                 });
-
-                if (addedCount > 0) {
-                    alert(`Sincronizzazione completata! Aggiunti ${addedCount} nuovi elementi.`);
-                } else {
-                    alert("Sincronizzazione completata: non c'erano nuovi elementi da aggiungere.");
-                }
+                alert(`Sincronizzazione completata!\nAggiunti: ${addedCount}\nAggiornati: ${updatedCount}`);
                 location.reload();
-            } catch(err) { 
-                alert("Errore nel caricamento del file. Assicurati che sia un file di backup valido."); 
-            }
+            } catch(err) { alert("Errore nel caricamento del file."); }
         };
         reader.readAsText(file);
     }
